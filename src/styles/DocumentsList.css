@@ -1,0 +1,125 @@
+.documents-list {
+  width: 100%;
+}
+
+.documents-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.documents-table thead {
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.documents-table th {
+  padding: var(--spacing-lg);
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: var(--font-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.documents-table tbody tr {
+  border-bottom: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.documents-table tbody tr:hover {
+  background-color: var(--bg-secondary);
+}
+
+.documents-table td {
+  padding: var(--spacing-lg);
+  font-size: var(--font-base);
+}
+
+.doc-name {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-base);
+}
+
+.doc-icon {
+  font-size: var(--font-lg);
+}
+
+.doc-name span:last-child {
+  color: var(--text-primary);
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.doc-date {
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+}
+
+.doc-size {
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+  font-weight: 500;
+}
+
+.doc-action {
+  text-align: center;
+}
+
+.download-btn {
+  background-color: #003366;
+  color: white;
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: var(--font-sm);
+}
+
+.download-btn:hover {
+  background-color: #001f3f;
+  box-shadow: var(--shadow-md);
+}
+
+.no-documents {
+  padding: var(--spacing-2xl);
+  text-align: center;
+  color: var(--text-secondary);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+}
+
+.no-documents p {
+  margin: 0;
+  font-size: var(--font-base);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .documents-table {
+    font-size: var(--font-sm);
+  }
+
+  .documents-table th,
+  .documents-table td {
+    padding: var(--spacing-base);
+  }
+
+  .documents-table th {
+    font-size: var(--font-xs);
+  }
+
+  .doc-name {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .download-btn {
+    padding: var(--spacing-sm) var(--spacing-base);
+    font-size: var(--font-xs);
+  }
+}
