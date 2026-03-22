@@ -5,57 +5,66 @@
 }
 
 :root {
-  /* Primary Colors - Modern Blue Theme */
-  --primary-color: #2563eb;
-  --primary-dark: #1e40af;
-  --primary-light: #3b82f6;
-  --primary-50: #eff6ff;
-  --primary-100: #dbeafe;
-  --header-dark: #f3f4f6;
+  /* COMAR Assurances Brand Colors */
+  --comar-blue-dark:   #1A2B6B;
+  --comar-blue-mid:    #1E5BA8;
+  --comar-red:         #C8102E;
+  --comar-white:       #FFFFFF;
+  --comar-gray-light:  #F4F6FA;
+  --comar-gray-border: #D1D9E6;
+
+  /* Primary Colors - COMAR Theme */
+  --primary-color: #1E5BA8;
+  --primary-dark: #1A2B6B;
+  --primary-light: #2E6FBF;
+  --primary-50: #EBF2FA;
+  --primary-100: #D1E2F4;
+  --header-dark: var(--comar-gray-light);
   --header-bg: #ffffff;
 
   /* Secondary Colors */
-  --secondary-color: #10b981;
-  --secondary-dark: #059669;
-  --secondary-light: #34d399;
-  --danger-color: #ef4444;
-  --danger-dark: #dc2626;
-  --danger-light: #f87171;
-  --warning-color: #f59e0b;
-  --warning-dark: #d97706;
-  --warning-light: #fbbf24;
-  --info-color: #0ea5e9;
-  --info-dark: #0284c7;
-  --info-light: #38bdf8;
+  --secondary-color: #2ECC71;
+  --secondary-dark: #27AE60;
+  --secondary-light: #58D68D;
+  --danger-color: #C8102E;
+  --danger-dark: #A00D24;
+  --danger-light: #E74C5E;
+  --warning-color: #F39C12;
+  --warning-dark: #D68910;
+  --warning-light: #F5B041;
+  --info-color: #1E5BA8;
+  --info-dark: #1A2B6B;
+  --info-light: #5B9BD5;
 
-  /* Neutral Colors - Modern Gray Scale */
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-light: #64748b;
-  --text-muted: #94a3b8;
+  /* Neutral Colors - COMAR Gray Scale */
+  --text-primary: #1A2B6B;
+  --text-secondary: #3D4A6B;
+  --text-light: #5A6A8A;
+  --text-muted: #8E9BB9;
   --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
-  --bg-tertiary: #f1f5f9;
-  --bg-quaternary: #e2e8f0;
-  --border-color: #e2e8f0;
-  --border-dark: #cbd5e1;
-  --border-light: #f1f5f9;
+  --bg-secondary: #F4F6FA;
+  --bg-tertiary: #EDF0F7;
+  --bg-quaternary: #D1D9E6;
+  --border-color: #D1D9E6;
+  --border-dark: #B8C4D9;
+  --border-light: #EDF0F7;
 
   /* Status Colors */
-  --status-pending: #f59e0b;
-  --status-review: #3b82f6;
-  --status-approved: #10b981;
-  --status-rejected: #ef4444;
-  --status-draft: #6b7280;
+  --status-pending: #F39C12;
+  --status-review: #1E5BA8;
+  --status-approved: #2ECC71;
+  --status-rejected: #C8102E;
+  --status-draft: #6B7899;
 
-  /* Enhanced Shadows */
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  /* Enhanced Shadows - COMAR tinted */
+  --shadow-xs: 0 1px 2px 0 rgba(26, 43, 107, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(26, 43, 107, 0.08), 0 1px 2px 0 rgba(26, 43, 107, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(26, 43, 107, 0.08), 0 2px 4px -1px rgba(26, 43, 107, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(26, 43, 107, 0.08), 0 4px 6px -2px rgba(26, 43, 107, 0.04);
+  --shadow-xl: 0 20px 25px -5px rgba(26, 43, 107, 0.1), 0 10px 10px -5px rgba(26, 43, 107, 0.03);
+  --shadow-2xl: 0 25px 50px -12px rgba(26, 43, 107, 0.2);
+  --shadow-inner: inset 0 2px 4px 0 rgba(26, 43, 107, 0.04);
+  --shadow-card: 0 4px 20px rgba(26, 43, 107, 0.08);
 
   /* Enhanced Typography */
   --font-xs: 0.75rem;
@@ -107,7 +116,7 @@
 html, body {
   width: 100%;
   height: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -129,11 +138,12 @@ body {
   min-height: 100vh;
 }
 
-/* Enhanced Typography */
+/* Enhanced Typography — Poppins */
 h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', sans-serif;
   font-weight: 700;
   line-height: 1.2;
-  color: var(--text-primary);
+  color: var(--comar-blue-dark);
   letter-spacing: -0.025em;
   margin-bottom: var(--spacing-lg);
 }
@@ -164,12 +174,12 @@ p {
 a {
   color: var(--primary-color);
   text-decoration: none;
-  transition: all var(--duration-fast) ease;
+  transition: all 0.2s ease;
   font-weight: 500;
 }
 
 a:hover {
-  color: var(--primary-dark);
+  color: var(--comar-red);
   transform: translateY(-1px);
 }
 
@@ -179,32 +189,32 @@ a:focus {
   border-radius: var(--radius-sm);
 }
 
-/* Enhanced Form Elements */
+/* Enhanced Form Elements — COMAR */
 input, textarea, select {
-  font-family: inherit;
+  font-family: 'Poppins', inherit;
   font-size: var(--font-base);
   padding: var(--spacing-base) var(--spacing-lg);
-  border: 2px solid #e5e7eb;
+  border: 1.5px solid var(--comar-gray-border);
   border-radius: var(--radius-lg);
-  background-color: #f9fafb;
+  background-color: #FAFBFD;
   color: var(--text-primary);
-  transition: all var(--duration-fast) ease;
+  transition: all 0.2s ease;
   width: 100%;
   font-weight: 500;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(26, 43, 107, 0.06);
 }
 
 input:focus, textarea:focus, select:focus {
   outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15), 0 4px 8px rgba(37, 99, 235, 0.2);
-  transform: translateY(-2px);
+  border-color: var(--comar-blue-mid);
+  box-shadow: 0 0 0 4px rgba(30, 91, 168, 0.12), 0 4px 8px rgba(30, 91, 168, 0.1);
+  transform: translateY(-1px);
   background-color: #ffffff;
 }
 
 input:hover, textarea:hover, select:hover {
-  border-color: #2563eb;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  border-color: var(--comar-blue-mid);
+  box-shadow: 0 2px 6px rgba(26, 43, 107, 0.1);
 }
 
 input:disabled, textarea:disabled, select:disabled {
@@ -227,8 +237,8 @@ input::placeholder, textarea::placeholder {
 .form-label {
   display: block;
   margin-bottom: var(--spacing-sm);
-  font-weight: 600;
-  color: var(--text-primary);
+  font-weight: 500;
+  color: var(--comar-blue-dark);
   font-size: var(--font-sm);
 }
 
@@ -246,15 +256,15 @@ input::placeholder, textarea::placeholder {
   font-weight: 500;
 }
 
-/* Enhanced Buttons */
+/* Enhanced Buttons — COMAR */
 button {
-  font-family: inherit;
+  font-family: 'Poppins', inherit;
   font-size: var(--font-base);
   padding: var(--spacing-base) var(--spacing-xl);
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: 8px;
   cursor: pointer;
-  transition: all var(--duration-fast) ease;
+  transition: all 0.2s ease;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
@@ -281,7 +291,7 @@ button:hover::before {
 
 button:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 6px 20px rgba(26, 43, 107, 0.15);
 }
 
 button:active {
@@ -297,33 +307,35 @@ button:disabled {
 }
 
 button:focus {
-  outline: 2px solid var(--primary-color);
+  outline: 2px solid var(--comar-blue-mid);
   outline-offset: 2px;
 }
 
-/* Button Variants */
+/* Button Variants — COMAR */
 .btn-primary {
-  background-color: var(--primary-color);
+  background-color: var(--comar-blue-mid);
   color: white;
+  box-shadow: 0 2px 8px rgba(30, 91, 168, 0.25);
 }
 
 .btn-primary:hover {
-  background-color: var(--primary-dark);
+  background-color: var(--comar-red);
+  box-shadow: 0 4px 16px rgba(200, 16, 46, 0.3);
 }
 
 .btn-secondary {
   background-color: var(--bg-primary);
-  color: var(--primary-color);
-  border: 2px solid var(--primary-color);
+  color: var(--comar-blue-mid);
+  border: 2px solid var(--comar-blue-mid);
 }
 
 .btn-secondary:hover {
-  background-color: var(--primary-color);
+  background-color: var(--comar-blue-mid);
   color: white;
 }
 
 .btn-danger {
-  background-color: var(--danger-color);
+  background-color: var(--comar-red);
   color: white;
 }
 
@@ -368,11 +380,11 @@ button:focus {
   font-size: var(--font-xl);
 }
 
-/* Enhanced Tables */
+/* Enhanced Tables — COMAR */
 .table-container {
   background-color: var(--bg-primary);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
   overflow: hidden;
   border: 1px solid var(--border-color);
 }
@@ -384,15 +396,15 @@ table {
 }
 
 thead {
-  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-quaternary) 100%);
-  border-bottom: 2px solid var(--border-color);
+  background: linear-gradient(135deg, var(--comar-blue-mid) 0%, var(--comar-blue-dark) 100%);
+  border-bottom: 2px solid var(--comar-blue-dark);
 }
 
 th {
   padding: var(--spacing-lg) var(--spacing-xl);
   text-align: left;
-  font-weight: 700;
-  color: var(--text-primary);
+  font-weight: 600;
+  color: #ffffff;
   font-size: var(--font-sm);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -406,13 +418,15 @@ td {
 }
 
 tbody tr {
-  transition: all var(--duration-fast) ease;
+  transition: all 0.2s ease;
+}
+
+tbody tr:nth-child(even) {
+  background-color: var(--comar-gray-light);
 }
 
 tbody tr:hover {
-  background-color: var(--bg-secondary);
-  transform: scale(1.01);
-  box-shadow: var(--shadow-sm);
+  background-color: rgba(30, 91, 168, 0.06);
 }
 
 tbody tr:last-child td {
@@ -422,7 +436,7 @@ tbody tr:last-child td {
 /* Table Responsive */
 .table-responsive {
   overflow-x: auto;
-  border-radius: var(--radius-xl);
+  border-radius: 12px;
 }
 
 @media (max-width: 768px) {
@@ -572,45 +586,45 @@ tbody tr:last-child td {
 .p-lg { padding: var(--spacing-lg); }
 .p-xl { padding: var(--spacing-xl); }
 
-/* Card Component */
+/* Card Component — COMAR */
 .card {
   background-color: var(--bg-primary);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
   border: 1px solid var(--border-color);
   overflow: hidden;
-  transition: all var(--duration-fast) ease;
+  transition: all 0.2s ease;
 }
 
 .card:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
   transform: translateY(-2px);
 }
 
 .card-header {
-  padding: var(--spacing-xl);
+  padding: 24px;
   border-bottom: 1px solid var(--border-color);
   background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
 }
 
 .card-body {
-  padding: var(--spacing-xl);
+  padding: 24px;
 }
 
 .card-footer {
-  padding: var(--spacing-xl);
+  padding: 24px;
   border-top: 1px solid var(--border-color);
   background-color: var(--bg-secondary);
 }
 
-/* Badge Component */
+/* Badge Component — COMAR pill style */
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: var(--spacing-xs) var(--spacing-sm);
+  padding: 4px 12px;
   font-size: var(--font-xs);
   font-weight: 600;
-  border-radius: var(--radius-full);
+  border-radius: 999px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -626,26 +640,26 @@ tbody tr:last-child td {
 }
 
 .badge-success {
-  background-color: rgba(16, 185, 129, 0.1);
-  color: var(--secondary-dark);
+  background-color: rgba(46, 204, 113, 0.12);
+  color: #27AE60;
 }
 
 .badge-warning {
-  background-color: rgba(245, 158, 11, 0.1);
-  color: var(--warning-dark);
+  background-color: rgba(243, 156, 18, 0.12);
+  color: #D68910;
 }
 
 .badge-danger {
-  background-color: rgba(239, 68, 68, 0.1);
-  color: var(--danger-dark);
+  background-color: rgba(200, 16, 46, 0.12);
+  color: var(--comar-red);
 }
 
-/* Loading Spinner */
+/* Loading Spinner — COMAR */
 .spinner {
   width: 20px;
   height: 20px;
   border: 2px solid var(--border-color);
-  border-top: 2px solid var(--primary-color);
+  border-top: 2px solid var(--comar-blue-mid);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -683,6 +697,38 @@ tbody tr:last-child td {
 
 .bounce {
   animation: bounce 1s infinite;
+}
+
+/* Custom Scrollbar — COMAR */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--comar-gray-light);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--comar-blue-mid);
+  border-radius: 4px;
+  border: 2px solid var(--comar-gray-light);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--comar-blue-dark);
+}
+
+/* Global transition */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color, box-shadow, transform, opacity;
+  transition-duration: 0s;
+  transition-timing-function: ease;
+}
+
+a, button, input, select, textarea, .card, .badge, .nav-link, .action-button, .tip-card {
+  transition: all 0.2s ease;
 }
 
 /* Enhanced Responsive Design */
@@ -770,23 +816,6 @@ tbody tr:last-child td {
   
   input, textarea, select {
     padding: var(--spacing-sm) var(--spacing-base);
-  }
-}
-
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text-primary: #f8fafc;
-    --text-secondary: #cbd5e1;
-    --text-light: #94a3b8;
-    --text-muted: #64748b;
-    --bg-primary: #0f172a;
-    --bg-secondary: #1e293b;
-    --bg-tertiary: #334155;
-    --bg-quaternary: #475569;
-    --border-color: #334155;
-    --border-dark: #475569;
-    --border-light: #1e293b;
   }
 }
 

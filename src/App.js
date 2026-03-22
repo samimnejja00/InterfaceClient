@@ -7,6 +7,7 @@ import CreateRequest from './pages/CreateRequest';
 import MyRequests from './pages/MyRequests';
 import RequestDetails from './pages/RequestDetails';
 import RCDashboard from './pages/RCDashboard';
+import LoginPage from './pages/LoginPage';
 import Navigation from './components/Navigation';
 import './styles/App.css';
 
@@ -110,6 +111,7 @@ function AppContent() {
     <Router>
       <Routes>
         <Route path="/" element={<WelcomePage />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/home" element={<><Navigation clientInfo={clientInfo} onLogout={logout} /><Dashboard clientInfo={clientInfo} /></>} />
         <Route path="/create-request" element={<><Navigation clientInfo={clientInfo} onLogout={logout} /><CreateRequest clientInfo={clientInfo} /></>} />
         <Route path="/my-requests" element={<><Navigation clientInfo={clientInfo} onLogout={logout} /><MyRequests clientInfo={clientInfo} /></>} />

@@ -9,7 +9,7 @@ function Navigation({ clientInfo, onLogout }) {
 
   const handleLogout = () => {
     onLogout();
-    navigate('/login');
+    navigate('/');
   };
 
   const isActive = (path) => location.pathname === path;
@@ -19,8 +19,7 @@ function Navigation({ clientInfo, onLogout }) {
       <div className="nav-container">
         {/* Logo */}
         <Link to="/" className="nav-logo">
-          <span className="logo-icon">�</span>
-          <span className="logo-text">PrestaTrack</span>
+          <img src="/logo-comar.png" alt="COMAR Assurances" className="navbar-logo-img" />
         </Link>
 
         {/* Menu Toggle Button */}
@@ -36,8 +35,8 @@ function Navigation({ clientInfo, onLogout }) {
         {/* Navigation Menu */}
         <div className={`nav-menu ${menuOpen ? 'active' : ''}`}>
           <Link
-            to="/"
-            className={`nav-link ${isActive('/') ? 'active' : ''}`}
+            to="/home"
+            className={`nav-link ${isActive('/home') ? 'active' : ''}`}
             onClick={() => setMenuOpen(false)}
           >
             Tableau de Bord

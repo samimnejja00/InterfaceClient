@@ -8,27 +8,31 @@
 }
 
 .documents-table thead {
-  background-color: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color);
+  background: linear-gradient(135deg, var(--comar-blue-mid) 0%, var(--comar-blue-dark) 100%);
+  border-bottom: 1px solid var(--comar-blue-dark);
 }
 
 .documents-table th {
   padding: var(--spacing-lg);
   text-align: left;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #ffffff;
   font-size: var(--font-sm);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .documents-table tbody tr {
-  border-bottom: 1px solid var(--border-color);
-  transition: all 0.3s ease;
+  border-bottom: 1px solid var(--comar-gray-border);
+  transition: all 0.2s ease;
+}
+
+.documents-table tbody tr:nth-child(even) {
+  background-color: var(--comar-gray-light);
 }
 
 .documents-table tbody tr:hover {
-  background-color: var(--bg-secondary);
+  background-color: rgba(30, 91, 168, 0.06);
 }
 
 .documents-table td {
@@ -47,7 +51,7 @@
 }
 
 .doc-name span:last-child {
-  color: var(--text-primary);
+  color: var(--comar-blue-dark);
   font-weight: 500;
   word-break: break-word;
 }
@@ -68,20 +72,21 @@
 }
 
 .download-btn {
-  background-color: #003366;
+  background-color: var(--comar-blue-mid);
   color: white;
   border: none;
   padding: var(--spacing-sm) var(--spacing-lg);
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   font-size: var(--font-sm);
+  box-shadow: 0 2px 6px rgba(30, 91, 168, 0.2);
 }
 
 .download-btn:hover {
-  background-color: #001f3f;
-  box-shadow: var(--shadow-md);
+  background-color: var(--comar-red);
+  box-shadow: 0 4px 12px rgba(200, 16, 46, 0.25);
 }
 
 .no-documents {
@@ -89,8 +94,8 @@
   text-align: center;
   color: var(--text-secondary);
   background-color: var(--bg-secondary);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  border: 1px solid var(--comar-gray-border);
 }
 
 .no-documents p {

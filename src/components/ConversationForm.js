@@ -26,10 +26,15 @@ const ConversationForm = ({ clientInfo }) => {
   const [showSummary, setShowSummary] = useState(false);
 
   const t = (key, params = {}) => {
-    let text = translations[selectedLanguage][key] || translations.fr[key] || key;
-    Object.keys(params).forEach(param => {
-      text = text.replace(`{${param}}`, params[param]);
-    });
+    const getNestedValue = (obj, path) => {
+      return path.split('.').reduce((current, segment) => current && current[segment], obj);
+    };
+    let text = getNestedValue(translations[selectedLanguage], key) || getNestedValue(translations.fr, key) || key;
+    if (typeof text === 'string') {
+      Object.keys(params).forEach(param => {
+        text = text.replace(`{${param}}`, params[param]);
+      });
+    }
     return text;
   };
 
@@ -38,10 +43,15 @@ const ConversationForm = ({ clientInfo }) => {
     console.log('Available translations:', Object.keys(translations));
     
     const t = (key, params = {}) => {
-      let text = translations[lang][key] || translations.fr[key] || key;
-      Object.keys(params).forEach(param => {
-        text = text.replace(`{${param}}`, params[param]);
-      });
+      const getNestedValue = (obj, path) => {
+        return path.split('.').reduce((current, segment) => current && current[segment], obj);
+      };
+      let text = getNestedValue(translations[lang], key) || getNestedValue(translations.fr, key) || key;
+      if (typeof text === 'string') {
+        Object.keys(params).forEach(param => {
+          text = text.replace(`{${param}}`, params[param]);
+        });
+      }
       return text;
     };
 
@@ -228,7 +238,12 @@ const ConversationForm = ({ clientInfo }) => {
       const fileText = selectedLanguage === 'tn' ? 'وثيقة' : 
                       selectedLanguage === 'ar' ? 'ملف' : 
                       selectedLanguage === 'en' ? 'file(s)' : 'fichier(s)';
-      return `📎 ${response.length} ${fileText} صيفطات`;
+      
+      const sentText = selectedLanguage === 'tn' ? 'صيفطات' : 
+                      selectedLanguage === 'ar' ? 'أرسلت' : 
+                      selectedLanguage === 'en' ? 'sent' : 'envoyé(s)';
+
+      return `📎 ${response.length} ${fileText} ${sentText}`;
     }
     return response;
   };
@@ -445,7 +460,12 @@ const ConversationForm = ({ clientInfo }) => {
           <div className="summary-item">
             <span className="summary-label">{t('labels.documents')}</span>
             <span className="summary-value">
-              📎 {formData.documents.length} {selectedLanguage === 'tn' ? 'وثيقة' : selectedLanguage === 'ar' ? 'ملف' : selectedLanguage === 'en' ? 'file(s)' : 'fichier(s)'} صيفطات
+              📎 {formData.documents.length} {
+                selectedLanguage === 'tn' ? 'وثيقة صيفطات' : 
+                selectedLanguage === 'ar' ? 'ملف أرسلت' : 
+                selectedLanguage === 'en' ? 'file(s) sent' : 
+                'fichier(s) envoyé(s)'
+              }
             </span>
             <button onClick={() => handleEdit('documents')} className="edit-button">{t('buttons.edit')}</button>
           </div>

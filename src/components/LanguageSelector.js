@@ -26,7 +26,10 @@ const LanguageSelector = ({ selectedLanguage, onLanguageChange, currentStep }) =
       </div>
       {currentStep > 0 && (
         <p className="language-locked">
-          📝 اللغة المختارة : {languages.find(l => l.code === selectedLanguage)?.name}
+          {selectedLanguage === 'tn' ? 'اللغة المختارة' : 
+           selectedLanguage === 'ar' ? 'اللغة المختارة' : 
+           selectedLanguage === 'en' ? 'Selected Language' : 
+           'Langue sélectionnée'} : {languages.find(l => l.code === selectedLanguage)?.name}
         </p>
       )}
     </div>

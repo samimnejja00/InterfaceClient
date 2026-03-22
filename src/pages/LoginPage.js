@@ -17,7 +17,7 @@ function LoginPage() {
     setError('');
 
     if (!email || !password) {
-      setError('Please fill in all fields');
+      setError('Veuillez remplir tous les champs');
       return;
     }
 
@@ -28,10 +28,10 @@ function LoginPage() {
         setAuthUser(result.data.user, result.data.profile);
         navigate('/');
       } else {
-        setError(result.error || 'Login failed. Please try again.');
+        setError(result.error || 'Échec de la connexion. Veuillez réessayer.');
       }
     } catch (err) {
-      setError(err.message || 'An error occurred during login');
+      setError(err.message || 'Une erreur est survenue lors de la connexion');
     } finally {
       setLoading(false);
     }

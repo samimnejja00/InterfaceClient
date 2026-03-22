@@ -6,7 +6,7 @@
 }
 
 .my-requests-header {
-  background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+  background: linear-gradient(135deg, var(--comar-blue-dark) 0%, var(--comar-blue-mid) 100%);
   color: white;
   padding: var(--spacing-3xl) var(--spacing-2xl);
   box-shadow: var(--shadow-md);
@@ -38,19 +38,21 @@
 }
 
 .create-request-link {
-  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  background: linear-gradient(135deg, var(--comar-blue-mid) 0%, var(--comar-blue-dark) 100%);
   color: white;
   padding: var(--spacing-base) var(--spacing-lg);
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   text-decoration: none;
   font-weight: 500;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(30, 91, 168, 0.25);
 }
 
 .create-request-link:hover {
-  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  background: linear-gradient(135deg, var(--comar-red) 0%, #A00D24 100%);
+  box-shadow: 0 4px 16px rgba(200, 16, 46, 0.3);
+  color: white;
 }
 
 .requests-summary {
@@ -64,16 +66,16 @@
 }
 
 .requests-summary strong {
-  color: var(--text-primary);
+  color: var(--comar-blue-dark);
   font-weight: 600;
 }
 
 .no-requests {
   background-color: var(--bg-primary);
   padding: var(--spacing-3xl);
-  border-radius: var(--radius-lg);
+  border-radius: 12px;
   text-align: center;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-card);
 }
 
 .no-requests p {
@@ -82,13 +84,14 @@
 }
 
 .create-link {
-  color: var(--primary-color);
+  color: var(--comar-blue-mid);
   font-weight: 500;
   text-decoration: none;
 }
 
 .create-link:hover {
   text-decoration: underline;
+  color: var(--comar-red);
 }
 
 /* Responsive */

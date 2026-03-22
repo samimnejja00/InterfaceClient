@@ -1,10 +1,10 @@
 .navigation {
-  background: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, var(--comar-blue-dark) 0%, var(--comar-blue-mid) 100%);
+  box-shadow: 0 2px 12px rgba(26, 43, 107, 0.2);
   position: sticky;
   top: 0;
   z-index: 1020;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: none;
 }
 
 .nav-container {
@@ -24,29 +24,33 @@
   text-decoration: none;
   font-size: 1.5rem;
   font-weight: 800;
-  color: #1e293b;
+  color: #ffffff;
   transition: all 0.2s ease;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
   letter-spacing: -0.02em;
+  background: white; /* Make the logo pop on blue */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .nav-logo:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: #f8fafc;
   transform: translateY(-1px);
 }
 
 .nav-logo img {
-  height: 36px;
+  height: 38px;
   width: auto;
+  display: block;
 }
 
 .logo-icon {
   font-size: 1.75rem;
-  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #ffffff;
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: #ffffff;
+  background-clip: unset;
 }
 
 .nav-menu {
@@ -56,7 +60,7 @@
 }
 
 .nav-link {
-  color: #475569;
+  color: rgba(255, 255, 255, 0.85);
   text-decoration: none;
   font-weight: 500;
   transition: all 0.2s ease;
@@ -67,29 +71,41 @@
 }
 
 .nav-link:hover {
-  color: #1e293b;
-  background-color: rgba(0, 0, 0, 0.05);
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-link:hover::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 2px;
+  background-color: var(--comar-red);
+  border-radius: 2px;
 }
 
 .nav-link.active {
   color: #ffffff;
-  background: #3b82f6;
+  background: var(--comar-red);
   font-weight: 600;
 }
 
 .nav-link.primary {
-  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  background: var(--comar-red);
   color: white;
   border-radius: 0.625rem;
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(200, 16, 46, 0.3);
 }
 
 .nav-link.primary:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+  background: #A00D24;
   color: white;
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 8px 20px rgba(200, 16, 46, 0.4);
 }
 
 .user-menu {
@@ -107,23 +123,24 @@
 
 .user-name {
   font-weight: 600;
-  color: #1e293b;
+  color: #ffffff;
   font-size: var(--font-sm);
 }
 
 .logout-button {
-  background: linear-gradient(135deg, var(--danger-color) 0%, var(--danger-dark) 100%);
+  background: rgba(255, 255, 255, 0.15);
   color: white;
-  border: none;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
   padding: var(--spacing-base) var(--spacing-xl);
-  border-radius: var(--radius-lg);
+  border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--duration-fast) ease;
+  transition: all 0.2s ease;
   font-size: var(--font-sm);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
   position: relative;
   overflow: hidden;
+  backdrop-filter: blur(4px);
 }
 
 .logout-button::before {
@@ -142,10 +159,11 @@
 }
 
 .logout-button:hover {
-  background: linear-gradient(135deg, var(--danger-dark) 0%, var(--danger-color) 100%);
+  background: var(--comar-red);
+  border-color: var(--comar-red);
   color: white;
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 16px rgba(200, 16, 46, 0.3);
 }
 
 .menu-toggle {
@@ -167,7 +185,7 @@
 .menu-toggle span {
   width: 28px;
   height: 3px;
-  background-color: var(--text-primary);
+  background-color: #ffffff;
   border-radius: var(--radius-full);
   transition: all var(--duration-normal) ease;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
@@ -222,7 +240,7 @@
     max-height: 0;
     overflow: hidden;
     transition: max-height var(--duration-normal) ease;
-    background: rgba(15, 23, 42, 0.95);
+    background: var(--comar-blue-dark);
     backdrop-filter: blur(10px);
     border-radius: var(--radius-lg);
     margin-top: var(--spacing-base);
@@ -231,7 +249,7 @@
   .nav-menu.active {
     max-height: 400px;
     padding: var(--spacing-base);
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .nav-link {
@@ -239,12 +257,13 @@
     padding: var(--spacing-lg) var(--spacing-xl);
     border-radius: var(--radius-md);
     margin: var(--spacing-xs) 0;
+    color: rgba(255, 255, 255, 0.85);
   }
 
   .nav-link.primary {
     border-radius: var(--radius-lg);
     margin: var(--spacing-base) 0;
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+    background: var(--comar-red);
   }
 
   .logout-button {

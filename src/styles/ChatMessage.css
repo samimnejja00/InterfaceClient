@@ -1,4 +1,4 @@
-/* Chat Message Component */
+/* Chat Message Component — COMAR */
 .chat-message {
   display: flex;
   gap: 12px;
@@ -41,7 +41,7 @@
 }
 
 .chat-message.assistant-message .message-avatar {
-  background-color: #334155;
+  background-color: rgba(30, 91, 168, 0.1);
 }
 
 .message-content {
@@ -61,20 +61,21 @@
 }
 
 .user-message .message-text {
-  background-color: #2563eb;
+  background-color: var(--comar-blue-mid);
   color: white;
   border-bottom-right-radius: 4px;
 }
 
 .assistant-message .message-text {
-  background-color: #334155;
-  color: #e2e8f0;
+  background-color: #ffffff;
+  color: var(--text-primary);
   border-bottom-left-radius: 4px;
+  border: 1px solid var(--comar-gray-border);
 }
 
 .message-time {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--text-muted);
   padding: 0 14px;
 }
 
@@ -97,7 +98,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: #64748b;
+  background-color: var(--comar-blue-mid);
   animation: typing 1.4s infinite;
 }
 

@@ -2,13 +2,13 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 .dashboard-header {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
+  background: linear-gradient(135deg, var(--comar-blue-dark) 0%, var(--comar-blue-mid) 50%, #2E6FBF 100%);
   color: white;
   padding: 3.5rem 2rem;
   position: relative;
@@ -23,8 +23,8 @@
   right: 0;
   bottom: 0;
   background: 
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 130, 246, 0.1), transparent),
-    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(99, 102, 241, 0.08), transparent);
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(30, 91, 168, 0.15), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(200, 16, 46, 0.06), transparent);
   pointer-events: none;
 }
 
@@ -62,7 +62,7 @@
   margin-bottom: 1.5rem;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--comar-blue-dark);
   position: relative;
   padding-left: 1rem;
 }
@@ -75,7 +75,7 @@
   transform: translateY(-50%);
   width: 3px;
   height: 20px;
-  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  background: linear-gradient(135deg, var(--comar-blue-mid) 0%, var(--comar-red) 100%);
   border-radius: 2px;
 }
 
@@ -92,7 +92,7 @@
   justify-content: center;
   gap: 1rem;
   padding: 2.5rem 2rem;
-  border-radius: 1rem;
+  border-radius: 12px;
   text-decoration: none;
   font-weight: 600;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -117,29 +117,29 @@
 }
 
 .action-button.primary {
-  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  background: linear-gradient(135deg, var(--comar-blue-mid) 0%, var(--comar-blue-dark) 100%);
   color: white;
-  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 4px 16px rgba(30, 91, 168, 0.25);
 }
 
 .action-button.primary:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
-  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);
+  background: linear-gradient(135deg, var(--comar-red) 0%, #A00D24 100%);
+  box-shadow: 0 10px 25px -5px rgba(200, 16, 46, 0.3);
   transform: translateY(-4px);
 }
 
 .action-button.secondary {
   background: #ffffff;
-  color: #3b82f6;
-  border: 1.5px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  color: var(--comar-blue-mid);
+  border: 1.5px solid var(--comar-gray-border);
+  box-shadow: var(--shadow-card);
 }
 
 .action-button.secondary:hover {
-  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  background: linear-gradient(135deg, var(--comar-blue-mid) 0%, var(--comar-blue-dark) 100%);
   color: white;
-  border-color: #3b82f6;
-  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);
+  border-color: var(--comar-blue-mid);
+  box-shadow: 0 10px 25px -5px rgba(30, 91, 168, 0.3);
   transform: translateY(-4px);
 }
 
@@ -166,7 +166,7 @@
   margin-bottom: var(--spacing-xl);
   font-size: var(--font-3xl);
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--comar-blue-dark);
   position: relative;
   padding-left: var(--spacing-lg);
 }
@@ -197,7 +197,7 @@
 .recent-requests-section h2 {
   font-size: var(--font-3xl);
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--comar-blue-dark);
   position: relative;
   padding-left: var(--spacing-lg);
 }
@@ -210,12 +210,12 @@
   transform: translateY(-50%);
   width: 4px;
   height: 24px;
-  background: linear-gradient(135deg, var(--info-color) 0%, var(--info-light) 100%);
+  background: linear-gradient(135deg, var(--comar-blue-mid) 0%, var(--comar-red) 100%);
   border-radius: var(--radius-full);
 }
 
 .view-all-link {
-  color: var(--primary-color);
+  color: var(--comar-blue-mid);
   font-weight: 600;
   text-decoration: none;
   transition: all var(--duration-fast) ease;
@@ -225,8 +225,8 @@
 }
 
 .view-all-link:hover {
-  color: var(--primary-dark);
-  background-color: var(--primary-50);
+  color: var(--comar-red);
+  background-color: rgba(200, 16, 46, 0.06);
   transform: translateX(4px);
 }
 
@@ -238,7 +238,7 @@
   margin-bottom: var(--spacing-xl);
   font-size: var(--font-3xl);
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--comar-blue-dark);
   position: relative;
   padding-left: var(--spacing-lg);
 }
@@ -262,12 +262,13 @@
 }
 
 .tip-card {
-  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
-  padding: var(--spacing-2xl);
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-md);
-  border-left: 4px solid var(--primary-color);
-  transition: all var(--duration-fast) ease;
+  background: var(--bg-primary);
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  border-left: 4px solid var(--comar-blue-mid);
+  border-top: 3px solid var(--comar-blue-mid);
+  transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
 }
@@ -279,18 +280,24 @@
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, var(--primary-color), var(--primary-light), var(--secondary-color));
+  background: linear-gradient(90deg, var(--comar-blue-mid), var(--comar-red));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tip-card:hover::before {
+  opacity: 1;
 }
 
 .tip-card:hover {
   box-shadow: var(--shadow-xl);
-  transform: translateY(-4px) scale(1.01);
-  border-left-color: var(--primary-light);
+  transform: translateY(-4px);
+  border-left-color: var(--comar-red);
 }
 
 .tip-card h3 {
   margin-bottom: var(--spacing-lg);
-  color: var(--text-primary);
+  color: var(--comar-blue-dark);
   font-size: var(--font-xl);
   font-weight: 600;
   display: flex;
@@ -304,10 +311,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+  background: linear-gradient(135deg, rgba(30, 91, 168, 0.1) 0%, rgba(26, 43, 107, 0.08) 100%);
   border-radius: 0.5rem;
   padding: 0.375rem;
-  color: #3b82f6;
+  color: var(--comar-blue-mid);
 }
 
 .tip-icon svg {

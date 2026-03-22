@@ -16,9 +16,9 @@ function DocumentsList({ documents }) {
         <table className="documents-table">
           <thead>
             <tr>
-              <th>Document Name</th>
-              <th>Upload Date</th>
-              <th>Size</th>
+              <th>Nom du Document</th>
+              <th>Date de Téléchargement</th>
+              <th>Taille</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -32,8 +32,8 @@ function DocumentsList({ documents }) {
                 <td className="doc-date">{doc.uploadDate}</td>
                 <td className="doc-size">{doc.size}</td>
                 <td className="doc-action">
-                  <button className="download-btn" title="Download document">
-                    📥 Download
+                  <button className="download-btn" title="Télécharger le document">
+                    📥 Télécharger
                   </button>
                 </td>
               </tr>
@@ -42,7 +42,7 @@ function DocumentsList({ documents }) {
         </table>
       ) : (
         <div className="no-documents">
-          <p>No documents uploaded</p>
+          <p>Aucun document téléchargé</p>
         </div>
       )}
     </div>
