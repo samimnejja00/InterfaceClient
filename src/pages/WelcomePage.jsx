@@ -105,13 +105,23 @@ function WelcomePage() {
           <p className="welcome-subtitle">
             Votre espace client pour la gestion simplifiée de vos prestations
           </p>
-          <button 
-            className="welcome-cta-button"
-            onClick={() => navigate('/home')}
-          >
-            Accéder à mon espace client
-            <ArrowRightIcon />
-          </button>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <button 
+              className="welcome-cta-button"
+              onClick={() => navigate('/login')}
+            >
+              Se connecter
+              <ArrowRightIcon />
+            </button>
+            <button 
+              className="welcome-cta-button"
+              onClick={() => navigate('/register')}
+              style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '2px solid rgba(255,255,255,0.3)' }}
+            >
+              Créer un compte
+              <ArrowRightIcon />
+            </button>
+          </div>
         </div>
       </div>
 

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { login } from '../services/authService';
+import { loginClient } from '../services/clientApi';
 import '../styles/LoginPage.css';
 
 function LoginPage() {
@@ -10,28 +10,31 @@ function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { setAuthUser } = useAuth();
+  const { setAuthClient, isAuthenticated } = useAuth();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/home');
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
     if (!email || !password) {
-      setError('Veuillez remplir tous les champs');
+      setError('Veuillez remplir tous les champs.');
       return;
     }
 
     setLoading(true);
     try {
-      const result = await login(email, password);
-      if (result.success) {
-        setAuthUser(result.data.user, result.data.profile);
-        navigate('/');
-      } else {
-        setError(result.error || 'Échec de la connexion. Veuillez réessayer.');
-      }
+      const result = await loginClient({ email, mot_de_passe: password });
+      setAuthClient(result.client);
+      navigate('/home');
     } catch (err) {
-      setError(err.message || 'Une erreur est survenue lors de la connexion');
+      setError(err.message || 'Échec de la connexion. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
@@ -42,13 +45,10 @@ function LoginPage() {
       <div className="login-card">
         <div className="login-header">
           <div className="login-logo">
-          <img 
-            src="/logo-comar.png" 
-            alt="COMAR Assurances" 
-          />
-        </div>
+            <img src="/logo-comar.png" alt="COMAR Assurances" />
+          </div>
           <h1>PrestaTrack</h1>
-          <p className="subtitle">COMAR Assurances — Gestion des Prestations</p>
+          <p className="subtitle">COMAR Assurances — Espace Client</p>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -85,7 +85,7 @@ function LoginPage() {
 
         <div className="signup-link" style={{ marginTop: '1.5rem', textAlign: 'center' }}>
           <span style={{ color: '#64748b' }}>Pas encore de compte ? </span>
-          <Link to="/signup" style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none' }}>
+          <Link to="/register" style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none' }}>
             Créer un compte
           </Link>
         </div>

@@ -49,11 +49,11 @@ function Navigation({ clientInfo, onLogout }) {
             Mes Demandes
           </Link>
           <Link
-            to="/create-request"
-            className={`nav-link primary ${isActive('/create-request') ? 'active' : ''}`}
+            to="/soumettre-dossier"
+            className={`nav-link primary ${isActive('/soumettre-dossier') || isActive('/create-request') ? 'active' : ''}`}
             onClick={() => setMenuOpen(false)}
           >
-            + Nouvelle Demande
+            + Soumettre un Dossier
           </Link>
         </div>
 
