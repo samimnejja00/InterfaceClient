@@ -252,3 +252,57 @@ section {
     flex-direction: column;
   }
 }
+
+.tracking-container {
+  background-color: var(--bg-primary);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  margin-top: 1rem;
+}
+.section-desc {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  font-size: 1.05rem;
+}
+.history-section {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--comar-gray-border);
+}
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+.history-item {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1rem;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  border-left: 3px solid var(--comar-blue-light);
+}
+.history-date {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  min-width: 150px;
+}
+.history-action {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.status-badge.status-en_cours {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+.status-badge.status-en_instance {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+.status-badge.status-cloture {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}

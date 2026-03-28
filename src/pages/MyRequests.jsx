@@ -2,75 +2,71 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import RequestTable from '../components/RequestTable';
 import FilterPanel from '../components/FilterPanel';
+import { fetchClientDossiers } from '../services/clientApi';
 import '../styles/MyRequests.css';
 
-function MyRequests({ clientInfo }) {
-  const [requests, setRequests] = useState([
-    {
-      id: 'DEM-2024-001234',
-      tipoPrestation: 'Rachat partiel',
-      montant: 5000,
-      created_at: '2024-03-10',
-      status: 'En attente',
-      description: 'Rachat partiel de mon contrat'
-    },
-    {
-      id: 'DEM-2024-001235',
-      tipoPrestation: 'Avance sur contrat',
-      montant: 3000,
-      created_at: '2024-03-08',
-      status: 'En cours',
-      description: 'Demande d\'avance d\'urgence'
-    },
-    {
-      id: 'DEM-2024-001236',
-      tipoPrestation: 'Rachat partiel',
-      montant: 2500,
-      created_at: '2024-03-05',
-      status: 'Validé',
-      description: 'Rachat régulier'
-    },
-    {
-      id: 'DEM-2024-001237',
-      tipoPrestation: 'Transfert',
-      montant: 1500,
-      created_at: '2024-02-28',
-      status: 'Validé',
-      description: 'Transfert de prestation'
-    },
-    {
-      id: 'DEM-2024-001238',
-      tipoPrestation: 'Résiliation',
-      montant: 4000,
-      created_at: '2024-02-20',
-      status: 'Rejeté',
-      description: 'Demande de résiliation'
-    },
-  ]);
+function mapEtatToStatus(etat) {
+  switch (etat) {
+    case 'EN_COURS': return 'En cours';
+    case 'EN_INSTANCE': return 'En attente';
+    case 'CLOTURE': return 'Validé';
+    default: return etat || 'En attente';
+  }
+}
 
-  const [filteredRequests, setFilteredRequests] = useState(requests);
+function MyRequests({ clientInfo }) {
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const [filteredRequests, setFilteredRequests] = useState([]);
   const [filterStatus, setFilterStatus] = useState('All');
   const [filterType, setFilterType] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const res = await fetchClientDossiers();
+        
+        const mappedData = res.data.map(dossier => ({
+          id: dossier.id,
+          tipoPrestation: dossier.type_prestation || 'Rachat partiel',
+          montant: 0,
+          created_at: dossier.created_at,
+          status: mapEtatToStatus(dossier.etat),
+          description: dossier.demande_initiale || '',
+          police_number: dossier.police_number
+        }));
+        
+        setRequests(mappedData);
+        setFilteredRequests(mappedData);
+      } catch (err) {
+        console.error('Error fetching dossiers:', err);
+        setError('Erreur lors du chargement des données.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  useEffect(() => {
     let filtered = requests;
 
-    // Filter by status
     if (filterStatus !== 'All') {
-      filtered = filtered.filter(req => req.status === filterStatus);
+      filtered = filtered.filter(req => req.status.toLowerCase() === filterStatus.toLowerCase());
     }
-
-    // Filter by type
     if (filterType !== 'All') {
-      filtered = filtered.filter(req => req.tipoPrestation === filterType);
+      filtered = filtered.filter(req => req.tipoPrestation === filterType);     
     }
-
-    // Search filter
     if (searchQuery) {
+      const q = searchQuery.toLowerCase();
       filtered = filtered.filter(req =>
-        req.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        req.description.toLowerCase().includes(searchQuery.toLowerCase())
+        (req.id && req.id.toLowerCase().includes(q)) ||
+        (req.description && req.description.toLowerCase().includes(q)) ||
+        (req.police_number && req.police_number.toLowerCase().includes(q))
       );
     }
 
@@ -78,15 +74,11 @@ function MyRequests({ clientInfo }) {
   }, [filterStatus, filterType, searchQuery, requests]);
 
   return (
-    <div className="my-requests-container">
-      <div className="my-requests-header">
-        <h1>Mes Demandes de Prestation</h1>
-        <p>Suivez toutes vos demandes de prestation d'assurance et leur statut actuel</p>
-      </div>
-
-      <div className="my-requests-content">
-        {/* Filter and Search */}
-        <div className="controls-section">
+    <div className="my-requests-container" style={{ backgroundColor: '#FAFBFD', minHeight: '100vh', paddingBottom: '2rem' }}>
+      <div className="my-requests-content" style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1rem' }}>
+        
+        {/* Full width filter panel */}
+        <div style={{ marginBottom: '2rem' }}>
           <FilterPanel
             filterStatus={filterStatus}
             filterType={filterType}
@@ -95,24 +87,28 @@ function MyRequests({ clientInfo }) {
             onFilterTypeChange={setFilterType}
             onSearchChange={setSearchQuery}
           />
+        </div>
 
-          <Link to="/create-request" className="create-request-link">
+        {/* Espace comprenant le compteur à gauche et le bouton à droite dans l'alignement */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <div className="requests-summary" style={{ margin: 0 }}>
+            <p style={{ margin: 0, color: '#6b7280', fontSize: '0.9rem' }}>Affichage de <strong>{filteredRequests.length}</strong> demande(s)</p>
+          </div>
+          <Link to="/soumettre-dossier" className="create-request-link" style={{ backgroundColor: '#214e9f', color: 'white', padding: '0.6rem 1.2rem', borderRadius: '6px', textDecoration: 'none', fontWeight: '600', boxShadow: '0 2px 4px rgba(33, 78, 159, 0.2)', backgroundImage: 'none', border: 'none', fontSize: '0.95rem' }}>
             + Nouvelle Demande
           </Link>
         </div>
 
-        {/* Summary */}
-        <div className="requests-summary">
-          <p>Affichage de <strong>{filteredRequests.length}</strong> demande(s)</p>
-        </div>
-
-        {/* Requests Table */}
-        {filteredRequests.length > 0 ? (
+        {loading ? (
+            <div className="loading-spinner" style={{ padding: '2rem', textAlign: 'center' }}>Chargement de vos demandes...</div>
+        ) : error ? (
+            <div className="error-message" style={{ color: 'red', padding: '1rem' }}>{error}</div>
+        ) : filteredRequests.length > 0 ? (
           <RequestTable requests={filteredRequests} />
         ) : (
-          <div className="no-requests">
-            <p>Aucune demande trouvée correspondant à vos filtres.</p>
-            <Link to="/create-request" className="create-link">Créer votre première demande</Link>
+          <div className="no-requests" style={{ padding: '3rem', textAlign: 'center', backgroundColor: 'white', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+            <p style={{ color: '#6b7280', marginBottom: '1rem' }}>Aucune demande trouvée.</p>        
+            <Link to="/soumettre-dossier" className="create-link" style={{ color: '#214e9f', fontWeight: '500', textDecoration: 'none' }}>Créer votre première demande</Link>
           </div>
         )}
       </div>

@@ -53,7 +53,7 @@ function Navigation({ clientInfo, onLogout }) {
             className={`nav-link primary ${isActive('/soumettre-dossier') || isActive('/create-request') ? 'active' : ''}`}
             onClick={() => setMenuOpen(false)}
           >
-            + Soumettre un Dossier
+            + Soumettre une Demande
           </Link>
         </div>
 

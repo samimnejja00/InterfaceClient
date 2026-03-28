@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { fetchClientDossiers } from '../services/clientApi';
 import StatusSummary from '../components/StatusSummary';
-import RecentRequests from '../components/RecentRequests';
 import '../styles/Dashboard.css';
 
 // Icônes SVG professionnelles
@@ -47,19 +47,60 @@ const MailIcon = () => (
   </svg>
 );
 
+// Helper: map DB etat to display status
+function mapEtatToStatus(etat) {
+  switch (etat) {
+    case 'EN_COURS': return 'En cours';
+    case 'EN_ATTENTE': return 'En attente';
+    case 'TRAITE': return 'Validé';
+    case 'REJETE': return 'Rejeté';
+    default: return etat || 'En cours';
+  }
+}
+
 function Dashboard({ clientInfo }) {
   const [requestStats, setRequestStats] = useState({
-    enAttente: 2,
-    enCours: 1,
-    valide: 3,
+    enAttente: 0,
+    enCours: 0,
+    valide: 0,
     rejete: 0
   });
+  const [recentDossiers, setRecentDossiers] = useState([]);
+  const [loadingDossiers, setLoadingDossiers] = useState(true);
 
-  const [recentRequests, setRecentRequests] = useState([
-    { id: 'DEM-2024-001234', tipoPrestation: 'Rachat partiel', montant: 5000, created_at: '2024-03-10', status: 'En attente' },
-    { id: 'DEM-2024-001235', tipoPrestation: 'Avance sur contrat', montant: 3000, created_at: '2024-03-08', status: 'En cours' },
-    { id: 'DEM-2024-001236', tipoPrestation: 'Rachat partiel', montant: 2500, created_at: '2024-03-05', status: 'Validé' },
-  ]);
+  // Fetch real dossiers from the DB on mount
+  useEffect(() => {
+    const loadDossiers = async () => {
+      try {
+        const result = await fetchClientDossiers();
+        const dossiers = result.data || [];
+
+        // Compute stats from real data
+        const stats = { enAttente: 0, enCours: 0, valide: 0, rejete: 0 };
+        dossiers.forEach((d) => {
+          switch (d.etat) {
+            case 'EN_ATTENTE': stats.enAttente++; break;
+            case 'EN_COURS': stats.enCours++; break;
+            case 'TRAITE': stats.valide++; break;
+            case 'REJETE': stats.rejete++; break;
+            default: stats.enCours++; break;
+          }
+        });
+        setRequestStats(stats);
+        setRecentDossiers(dossiers.slice(0, 5));
+      } catch (err) {
+        console.error('Failed to load dossiers:', err);
+      } finally {
+        setLoadingDossiers(false);
+      }
+    };
+    loadDossiers();
+  }, []);
+
+  const formatDate = (date) => {
+    if (!date) return '-';
+    return new Date(date).toLocaleDateString('fr-FR');
+  };
 
   return (
     <div className="dashboard-container">
@@ -75,7 +116,7 @@ function Dashboard({ clientInfo }) {
         <section className="quick-actions">
           <h2>Actions Rapides</h2>
           <div className="actions-grid">
-            <Link to="/create-request" className="action-button primary">
+            <Link to="/soumettre-dossier" className="action-button primary">
               <span className="action-icon">
                 <PlusIcon />
               </span>
@@ -96,13 +137,49 @@ function Dashboard({ clientInfo }) {
           <StatusSummary stats={requestStats} />
         </section>
 
-        {/* Recent Requests */}
+        {/* Recent Dossiers from DB */}
         <section className="recent-requests-section">
           <div className="section-header">
             <h2>Demandes Récentes</h2>
             <Link to="/my-requests" className="view-all-link">Voir Tout</Link>
           </div>
-          <RecentRequests requests={recentRequests.slice(0, 5)} />
+          {loadingDossiers ? (
+            <div style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
+              Chargement de vos demandes...
+            </div>
+          ) : recentDossiers.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
+              <p>Aucune demande pour le moment.</p>
+              <Link to="/soumettre-dossier" style={{ color: '#3b82f6' }}>Soumettre votre premier dossier</Link>
+            </div>
+          ) : (
+            <table className="requests-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #e2e8f0' }}>Souscripteur</th>
+                  <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #e2e8f0' }}>N° Police</th>
+                  <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #e2e8f0' }}>Agence</th>
+                  <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #e2e8f0' }}>Date</th>
+                  <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #e2e8f0' }}>État</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentDossiers.map((dossier) => (
+                  <tr key={dossier.id}>
+                    <td style={{ padding: '0.75rem', borderBottom: '1px solid #f1f5f9' }}>{dossier.souscripteur}</td>
+                    <td style={{ padding: '0.75rem', borderBottom: '1px solid #f1f5f9' }}>{dossier.police_number}</td>
+                    <td style={{ padding: '0.75rem', borderBottom: '1px solid #f1f5f9' }}>{dossier.agences?.nom || '-'}</td>
+                    <td style={{ padding: '0.75rem', borderBottom: '1px solid #f1f5f9' }}>{formatDate(dossier.created_at)}</td>
+                    <td style={{ padding: '0.75rem', borderBottom: '1px solid #f1f5f9' }}>
+                      <span className={`status-badge status-${dossier.etat?.toLowerCase()?.replace('_', '-')}`}>
+                        {mapEtatToStatus(dossier.etat)}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </section>
 
         {/* Quick Tips */}

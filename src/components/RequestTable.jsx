@@ -17,7 +17,7 @@ function RequestTable({ requests }) {
       <table className="request-table">
         <thead>
           <tr>
-            <th>N° Demande</th>
+            <th>N° Police</th>
             <th>Type de Prestation</th>
             <th>Montant</th>
             <th>Date de Soumission</th>
@@ -29,11 +29,11 @@ function RequestTable({ requests }) {
           {requests.map((request) => (
             <tr key={request.id}>
               <td className="request-id">
-                <strong>{request.id}</strong>
+                <strong>{request.police_number}</strong>
               </td>
               <td className="request-type">{request.tipoPrestation || request.type}</td>
               <td className="request-amount">
-                <strong>{(request.montant || request.amount).toLocaleString('fr-FR')} €</strong>
+                <strong>{(request.montant !== undefined ? request.montant : (request.amount || 0)).toLocaleString('fr-FR')} €</strong>
               </td>
               <td className="request-date">{formatDate(request.date || request.created_at)}</td>
               <td>

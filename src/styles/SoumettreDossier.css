@@ -431,3 +431,4 @@
     width: 100%;
   }
 }
+.file-input-wrapper { margin-top: 5px; } .file-input { border: 1px solid #d1d5db; border-radius: 6px; padding: 10px; width: 100%; background: white; } .file-hint { color: #64748b; font-size: 0.85rem; margin-top: 4px; display: block; }

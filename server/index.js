@@ -10,7 +10,13 @@ const PORT = process.env.PORT || 5000;
 
 // ─── Middleware ──────────────────────────────────────────────────────
 app.use(cors({
-  origin: 'http://localhost:3000', // React dev server
+  origin: function (origin, callback) {
+    if (!origin || origin.startsWith('http://localhost:')) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS non autorisé'));
+    }
+  }, // Accepte n'importe quel port sur localhost (ex: 3000, 3005)
   credentials: true,
 }));
 app.use(express.json());

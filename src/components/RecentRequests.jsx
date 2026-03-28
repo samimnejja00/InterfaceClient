@@ -18,7 +18,7 @@ function RecentRequests({ requests }) {
         <table className="requests-table">
           <thead>
             <tr>
-              <th>N° Demande</th>
+              <th>N° Police</th>
               <th>Type de Prestation</th>
               <th>Montant</th>
               <th>Date</th>
@@ -29,9 +29,9 @@ function RecentRequests({ requests }) {
           <tbody>
             {requests.map((request) => (
               <tr key={request.id}>
-                <td className="request-id">{request.id}</td>
+                <td className="request-id">{request.police_number}</td>
                 <td className="request-type">{request.tipoPrestation || request.type}</td>
-                <td className="request-amount">{(request.montant || request.amount).toLocaleString('fr-FR')} €</td>
+                <td className="request-amount">{(request.montant !== undefined ? request.montant : (request.amount || 0)).toLocaleString('fr-FR')} TND</td>
                 <td className="request-date">{formatDate(request.created_at || request.date)}</td>
                 <td>
                   <span className={`status-badge ${getStatusClass(request.status)}`}>

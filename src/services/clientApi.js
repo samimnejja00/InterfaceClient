@@ -77,17 +77,34 @@ export async function fetchAgences() {
   return handleResponse(res);
 }
 
-export async function submitDossier({ souscripteur, police_number, agence_id, type_prestation, demande_initiale }) {
+export async function submitDossier(formData) {
+  // If formData is an instance of FormData, use it as is (for file uploads)
+  const isFormData = formData instanceof FormData;
+  
+  const headers = getAuthHeaders();
+  if (isFormData) {
+    // When using FormData, we CANNOT set Content-Type to application/json.
+    // The browser will automatically set it to multipart/form-data and add the boundary.
+    delete headers['Content-Type'];
+  }
+
   const res = await fetch(`${API_BASE}/dossiers`, {
     method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({ souscripteur, police_number, agence_id, type_prestation, demande_initiale }),
+    headers,
+    body: isFormData ? formData : JSON.stringify(formData),
   });
   return handleResponse(res);
 }
 
 export async function fetchClientDossiers() {
   const res = await fetch(`${API_BASE}/dossiers`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse(res);
+}
+
+export async function fetchClientDossierById(id) {
+  const res = await fetch(`${API_BASE}/dossiers/${id}`, {
     headers: getAuthHeaders(),
   });
   return handleResponse(res);

@@ -1,9 +1,18 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
+const multer = require('multer');
 const supabase = require('../config/supabase');
 const authenticateClient = require('../middleware/authenticateClient');
 
 const router = express.Router();
+
+// Multer setup for memory storage (file buffers)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5 MB max
+  }
+});
 
 // All routes here require client authentication
 router.use(authenticateClient);
@@ -60,7 +69,7 @@ router.get('/agences', async (req, res) => {
 });
 
 // ─── POST /api/dossiers — Soumission d'un dossier ──────────────────
-router.post('/', dossierValidation, async (req, res) => {
+router.post('/', upload.single('piece_justificative'), dossierValidation, async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const messages = errors.array().map(e => e.msg);
@@ -85,6 +94,38 @@ router.post('/', dossierValidation, async (req, res) => {
       });
     }
 
+    let piece_justificative_url = null;
+
+    // Upload file to Supabase if present
+    if (req.file) {
+      const fileExt = req.file.originalname.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `${client_id}/${fileName}`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('pieces_justificatives')
+        .upload(filePath, req.file.buffer, {
+          contentType: req.file.mimetype,
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('File upload error:', uploadError);
+        return res.status(500).json({
+          success: false,
+          message: 'Erreur lors de l\'upload de la pièce justificative. Veuillez réessayer.'
+        });
+      }
+
+      // Get public URL (assuming the bucket is public, or we can just store the path)
+      const { data: publicURLData } = supabase.storage
+        .from('pieces_justificatives')
+        .getPublicUrl(filePath);
+
+      piece_justificative_url = publicURLData.publicUrl;
+    }
+
     // Step 1: Create dossier
     const { data: dossier, error: dossierError } = await supabase
       .from('dossiers')
@@ -97,6 +138,7 @@ router.post('/', dossierValidation, async (req, res) => {
         etat: 'EN_COURS',
         is_urgent: false,
         created_by: null, // Client, not an internal agent
+        piece_justificative_url // On l'ajoute ici
       })
       .select('id, souscripteur, police_number, niveau, etat, is_urgent, created_at')
       .single();
@@ -109,14 +151,14 @@ router.post('/', dossierValidation, async (req, res) => {
       });
     }
 
-    // Step 2: Create dossier_details_rc
+    // Step 2: Create dossier_details_rc (includes type_prestation in demande_initiale)
     const { error: detailsError } = await supabase
       .from('dossier_details_rc')
       .insert({
         dossier_id: dossier.id,
         date_reception: new Date().toISOString().split('T')[0], // TODAY
-        demande_initiale,
-        motif_instance: 'Nouvelle demande client',
+        demande_initiale: `[${type_prestation}] ${demande_initiale}`,
+        motif_instance: `Nouvelle demande client - ${type_prestation}`,
       });
 
     if (detailsError) {
@@ -193,6 +235,42 @@ router.get('/', async (req, res) => {
       success: false,
       message: 'Erreur interne du serveur.'
     });
+  }
+});
+
+// GET /api/dossiers/:id — Récupérer un dossier spécifique du client avec son historique
+router.get('/:id', async (req, res) => {
+  try {
+    const { data: dossier, error: dossierError } = await supabase
+      .from('dossiers')
+      .select(`
+        *,
+        agences ( id, nom, code ),
+        dossier_details_rc ( date_reception, demande_initiale, motif_instance ) 
+      `)
+      .eq('id', req.params.id)
+      .eq('client_id', req.client.id)
+      .maybeSingle();
+
+    if (dossierError || !dossier) {
+      console.error('Dossier fetch error:', dossierError);
+      return res.status(404).json({ success: false, message: 'Erreur Supabase: ' + (dossierError ? dossierError.message : 'Not found') + ' details: ' + JSON.stringify(dossierError) });
+    }
+
+    const { data: historique } = await supabase
+      .from('historique_actions')
+      .select('*')
+      .eq('dossier_id', req.params.id)
+      .order('created_at', { ascending: true });
+
+    return res.status(200).json({
+      success: true,
+      data: dossier,
+      historique: historique || []
+    });
+  } catch (error) {
+    console.error('Fetch dossier error general:', error);
+    return res.status(500).json({ success: false, message: 'Erreur interne du serveur.' });
   }
 });
 

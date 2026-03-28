@@ -118,3 +118,8 @@
     padding: var(--spacing-lg) var(--spacing-base);
   }
 }
+
+.clickable-row:hover {
+  background-color: #f8fafc !important;
+}
+

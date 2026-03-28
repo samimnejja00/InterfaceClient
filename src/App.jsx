@@ -6,11 +6,12 @@ import Dashboard from './pages/Dashboard';
 import CreateRequest from './pages/CreateRequest';
 import MyRequests from './pages/MyRequests';
 import RequestDetails from './pages/RequestDetails';
-import RCDashboard from './pages/RCDashboard';
+
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import SoumettreDossier from './pages/SoumettreDossier';
 import Navigation from './components/Navigation';
+import Chatbot from './components/Chatbot';
 import './styles/App.css';
 
 // Protected route component
@@ -105,16 +106,12 @@ function AppContent() {
             <RequestDetails clientInfo={clientInfo} />
           </ProtectedRoute>
         } />
-        <Route path="/rc-dashboard" element={
-          <ProtectedRoute>
-            <Navigation clientInfo={clientInfo} onLogout={logout} />
-            <RCDashboard />
-          </ProtectedRoute>
-        } />
+        
 
         {/* Redirect old signup to register */}
         <Route path="/signup" element={<Navigate to="/register" replace />} />
       </Routes>
+      {isAuthenticated && <Chatbot />}
     </Router>
   );
 }

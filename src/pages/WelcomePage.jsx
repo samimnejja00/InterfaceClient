@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import '../styles/WelcomePage.css';
 
 // Icônes SVG professionnelles
@@ -48,6 +49,7 @@ const ArrowRightIcon = () => (
 
 function WelcomePage() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   const features = [
     {
@@ -106,21 +108,43 @@ function WelcomePage() {
             Votre espace client pour la gestion simplifiée de vos prestations
           </p>
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <button 
-              className="welcome-cta-button"
-              onClick={() => navigate('/login')}
-            >
-              Se connecter
-              <ArrowRightIcon />
-            </button>
-            <button 
-              className="welcome-cta-button"
-              onClick={() => navigate('/register')}
-              style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '2px solid rgba(255,255,255,0.3)' }}
-            >
-              Créer un compte
-              <ArrowRightIcon />
-            </button>
+            {isAuthenticated ? (
+              <>
+                <button 
+                  className="welcome-cta-button"
+                  onClick={() => navigate('/soumettre-dossier')}
+                >
+                  Soumettre une demande de prestation
+                  <ArrowRightIcon />
+                </button>
+                <button 
+                  className="welcome-cta-button"
+                  onClick={() => navigate('/my-requests')}
+                  style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '2px solid rgba(255,255,255,0.3)' }}
+                >
+                  Consulter mes demandes
+                  <ArrowRightIcon />
+                </button>
+              </>
+            ) : (
+              <>
+                <button 
+                  className="welcome-cta-button"
+                  onClick={() => navigate('/login')}
+                >
+                  Se connecter
+                  <ArrowRightIcon />
+                </button>
+                <button 
+                  className="welcome-cta-button"
+                  onClick={() => navigate('/register')}
+                  style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '2px solid rgba(255,255,255,0.3)' }}
+                >
+                  Créer un compte
+                  <ArrowRightIcon />
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>

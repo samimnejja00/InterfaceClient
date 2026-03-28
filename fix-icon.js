@@ -1,4 +1,6 @@
-import React from 'react';
+const fs = require('fs');
+
+const code = `import React from 'react';
 import '../styles/StatusSummary.css';
 
 // SVG Icons
@@ -55,7 +57,7 @@ function StatusSummary({ stats }) {
               <div
                 className="progress-bar"
                 style={{
-                  width: total > 0 ? `${(status.value / total) * 100}%` : '0%', 
+                  width: total > 0 ? \`\${(status.value / total) * 100}%\` : '0%', 
                   backgroundColor: status.color
                 }}
               ></div>
@@ -71,3 +73,7 @@ function StatusSummary({ stats }) {
 }
 
 export default StatusSummary;
+`;
+
+fs.writeFileSync('src/components/StatusSummary.jsx', code, 'utf-8');
+console.log('StatusSummary updated!');

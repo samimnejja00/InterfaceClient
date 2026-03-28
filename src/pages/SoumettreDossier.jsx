@@ -17,6 +17,7 @@ function SoumettreDossier() {
     type_prestation: '',
     demande_initiale: '',
   });
+  const [file, setFile] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [successDossier, setSuccessDossier] = useState(null);
@@ -50,6 +51,22 @@ function SoumettreDossier() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      // Validate file size and type if needed
+      if (selectedFile.size > 5 * 1024 * 1024) {
+        setError('Le fichier ne doit pas dépasser 5 Mo.');
+        e.target.value = '';
+        return;
+      }
+      setFile(selectedFile);
+      setError('');
+    } else {
+      setFile(null);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -78,7 +95,15 @@ function SoumettreDossier() {
 
     setLoading(true);
     try {
-      const result = await submitDossier(formData);
+      const dataToSubmit = new FormData();
+      Object.keys(formData).forEach(key => {
+        dataToSubmit.append(key, formData[key]);
+      });
+      if (file) {
+        dataToSubmit.append('piece_justificative', file);
+      }
+
+      const result = await submitDossier(dataToSubmit);
       setSuccessDossier(result.dossier);
     } catch (err) {
       setError(err.message || 'Erreur lors de la soumission du dossier.');
@@ -137,6 +162,7 @@ function SoumettreDossier() {
                 type_prestation: '',
                 demande_initiale: '',
               });
+              setFile(null);
             }}>
               Soumettre un autre dossier
             </button>
@@ -159,7 +185,7 @@ function SoumettreDossier() {
             </svg>
           </div>
           <div>
-            <h1>Soumettre un dossier</h1>
+            <h1>Soumettre une demande</h1>
             <p className="dossier-subtitle">
               Remplissez les informations ci-dessous pour créer votre demande de prestation
             </p>
@@ -269,6 +295,22 @@ function SoumettreDossier() {
                 )}
               </small>
             </div>
+
+            <div className="form-field">
+              <label htmlFor="piece_justificative">Pièce justificative (PDF, PNG, JPG) (Optionnel)</label>
+              <div className="file-input-wrapper">
+                <input
+                  type="file"
+                  id="piece_justificative"
+                  name="piece_justificative"
+                  accept=".pdf, .png, .jpg, .jpeg"
+                  onChange={handleFileChange}
+                  disabled={loading}
+                  className="file-input"
+                />
+              </div>
+              <small className="file-hint">Taille maximale : 5 Mo.</small>
+            </div>
           </div>
 
           <div className="form-actions">
@@ -296,7 +338,7 @@ function SoumettreDossier() {
                     <line x1="22" y1="2" x2="11" y2="13"/>
                     <polygon points="22 2 15 22 11 13 2 9 22 2"/>
                   </svg>
-                  Soumettre le dossier
+                  Soumettre la demande
                 </>
               )}
             </button>
