@@ -30,15 +30,33 @@ function MyRequests({ clientInfo }) {
         setLoading(true);
         const res = await fetchClientDossiers();
         
-        const mappedData = res.data.map(dossier => ({
-          id: dossier.id,
-          tipoPrestation: dossier.type_prestation || 'Rachat partiel',
-          montant: 0,
-          created_at: dossier.created_at,
-          status: mapEtatToStatus(dossier.etat),
-          description: dossier.demande_initiale || '',
-          police_number: dossier.police_number
-        }));
+        const mappedData = res.data.map(dossier => {
+          let typePrestation = dossier.type_prestation || 'Rachat partiel';
+          let demandeInitiale = dossier.demande_initiale || '';
+          
+          const details = Array.isArray(dossier.dossier_details_rc) ? dossier.dossier_details_rc[0] : dossier.dossier_details_rc;
+          if (details?.demande_initiale) {
+            demandeInitiale = details.demande_initiale;
+            if (demandeInitiale.startsWith('[')) {
+              const parts = demandeInitiale.split(']');
+              typePrestation = parts[0].replace('[', '');
+              // Optionally remove the bracketed part from the description
+              demandeInitiale = parts.slice(1).join(']').trim();
+            } else {
+              typePrestation = demandeInitiale;
+            }
+          }
+
+          return {
+            id: dossier.id,
+            tipoPrestation: typePrestation,
+            montant: 0,
+            created_at: dossier.created_at,
+            status: mapEtatToStatus(dossier.etat),
+            description: demandeInitiale,
+            police_number: dossier.police_number
+          };
+        });
         
         setRequests(mappedData);
         setFilteredRequests(mappedData);
