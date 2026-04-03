@@ -33,7 +33,11 @@ function RequestTable({ requests }) {
               </td>
               <td className="request-type">{request.tipoPrestation || request.type}</td>
               <td className="request-amount">
-                <strong>{(request.montant !== undefined ? request.montant : (request.amount || 0)).toLocaleString('fr-FR')} €</strong>
+                <strong>
+                  {((request.montant && Number(request.montant) > 0) || (request.amount && Number(request.amount) > 0))
+                    ? `${Number(request.montant || request.amount).toLocaleString('fr-FR')} TND`
+                    : 'NA'}
+                </strong>
               </td>
               <td className="request-date">{formatDate(request.date || request.created_at)}</td>
               <td>

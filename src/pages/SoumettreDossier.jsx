@@ -11,7 +11,6 @@ function SoumettreDossier() {
   const [agences, setAgences] = useState([]);
   const [loadingAgences, setLoadingAgences] = useState(true);
   const [formData, setFormData] = useState({
-    souscripteur: '',
     police_number: '',
     agence_id: '',
     type_prestation: '',
@@ -72,10 +71,6 @@ function SoumettreDossier() {
     setError('');
 
     // Validation côté client
-    if (!formData.souscripteur.trim()) {
-      setError('Le nom du souscripteur est obligatoire.');
-      return;
-    }
     if (!formData.police_number.trim()) {
       setError('Le numéro de police est obligatoire.');
       return;
@@ -99,6 +94,8 @@ function SoumettreDossier() {
       Object.keys(formData).forEach(key => {
         dataToSubmit.append(key, formData[key]);
       });
+      dataToSubmit.append('souscripteur', client?.nom_complet || '');
+      
       if (file) {
         dataToSubmit.append('piece_justificative', file);
       }
@@ -156,7 +153,6 @@ function SoumettreDossier() {
             <button className="btn-secondary" onClick={() => {
               setSuccessDossier(null);
               setFormData({
-                souscripteur: '',
                 police_number: '',
                 agence_id: '',
                 type_prestation: '',
@@ -207,19 +203,6 @@ function SoumettreDossier() {
           <div className="form-section">
             <h3 className="form-section-title">Informations du contrat</h3>
             <div className="form-grid">
-              <div className="form-field">
-                <label htmlFor="souscripteur">Nom du souscripteur *</label>
-                <input
-                  type="text"
-                  id="souscripteur"
-                  name="souscripteur"
-                  value={formData.souscripteur}
-                  onChange={handleChange}
-                  placeholder="Nom complet du souscripteur"
-                  disabled={loading}
-                  required
-                />
-              </div>
               <div className="form-field">
                 <label htmlFor="police_number">N° de police d'assurance *</label>
                 <input

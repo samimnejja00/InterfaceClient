@@ -140,7 +140,7 @@ router.post('/', upload.single('piece_justificative'), dossierValidation, async 
         created_by: null, // Client, not an internal agent
         piece_justificative_url // On l'ajoute ici
       })
-      .select('id, souscripteur, police_number, niveau, etat, is_urgent, created_at')
+      .select('id, souscripteur, police_number, niveau, etat, is_urgent, montant, created_at')
       .single();
 
     if (dossierError) {
@@ -210,7 +210,7 @@ router.get('/', async (req, res) => {
     const { data: dossiers, error } = await supabase
       .from('dossiers')
       .select(`
-        id, souscripteur, police_number, niveau, etat, is_urgent, created_at, updated_at,
+        id, souscripteur, police_number, niveau, etat, is_urgent, montant, created_at, updated_at,
         agences ( id, nom, code ),
         dossier_details_rc ( date_reception, demande_initiale, motif_instance )
       `)
