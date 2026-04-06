@@ -3,15 +3,27 @@ import { Link } from 'react-router-dom';
 import RequestTable from '../components/RequestTable';
 import FilterPanel from '../components/FilterPanel';
 import { fetchClientDossiers } from '../services/clientApi';
-import '../styles/MyRequests.css';
 
 function mapEtatToStatus(etat) {
   switch (etat) {
-    case 'EN_COURS': return 'En cours';
-    case 'EN_INSTANCE': return 'En attente';
-    case 'CLOTURE': return 'Validé';
-    default: return etat || 'En attente';
+    case 'EN_COURS':
+      return 'En cours';
+    case 'EN_INSTANCE':
+    case 'EN_ATTENTE': // legacy
+      return 'En instance';
+    case 'CLOTURE':
+    case 'TRAITE': // legacy
+      return 'Clôturé';
+    case 'REJETE': // legacy
+      return 'Rejeté';
+    default:
+      return etat || 'En cours';
   }
+}
+
+function formatRequestNumber(dossier) {
+  if (dossier?.request_number) return dossier.request_number;
+  return `DEM-${String(dossier?.id || '').slice(0, 8).toUpperCase()}`;
 }
 
 function MyRequests({ clientInfo }) {
@@ -31,29 +43,21 @@ function MyRequests({ clientInfo }) {
         const res = await fetchClientDossiers();
         
         const mappedData = res.data.map(dossier => {
-          let typePrestation = dossier.type_prestation || 'Rachat partiel';
-          let demandeInitiale = dossier.demande_initiale || '';
-          
           const details = Array.isArray(dossier.dossier_details_rc) ? dossier.dossier_details_rc[0] : dossier.dossier_details_rc;
-          if (details?.demande_initiale) {
-            demandeInitiale = details.demande_initiale;
-            if (demandeInitiale.startsWith('[')) {
-              const parts = demandeInitiale.split(']');
-              typePrestation = parts[0].replace('[', '');
-              // Optionally remove the bracketed part from the description
-              demandeInitiale = parts.slice(1).join(']').trim();
-            } else {
-              typePrestation = demandeInitiale;
-            }
+          let demandeInitiale = details?.demande_initiale || dossier.demande_initiale || 'Non précisée';
+          if (demandeInitiale.startsWith('[')) {
+            const parts = demandeInitiale.split(']');
+            demandeInitiale = parts[0].replace('[', '').trim() || demandeInitiale;
           }
 
           return {
             id: dossier.id,
-            tipoPrestation: typePrestation,
+            requestNumber: formatRequestNumber(dossier),
+            demandeInitiale,
             montant: 0,
             created_at: dossier.created_at,
             status: mapEtatToStatus(dossier.etat),
-            description: demandeInitiale,
+            motifInstance: details?.motif_instance || '',
             police_number: dossier.police_number
           };
         });
@@ -77,13 +81,15 @@ function MyRequests({ clientInfo }) {
       filtered = filtered.filter(req => req.status.toLowerCase() === filterStatus.toLowerCase());
     }
     if (filterType !== 'All') {
-      filtered = filtered.filter(req => req.tipoPrestation === filterType);     
+      filtered = filtered.filter(req => req.demandeInitiale === filterType);
     }
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       filtered = filtered.filter(req =>
-        (req.id && req.id.toLowerCase().includes(q)) ||
-        (req.description && req.description.toLowerCase().includes(q)) ||
+        String(req.id || '').toLowerCase().includes(q) ||
+        String(req.requestNumber || '').toLowerCase().includes(q) ||
+        (req.demandeInitiale && req.demandeInitiale.toLowerCase().includes(q)) ||
+        (req.motifInstance && req.motifInstance.toLowerCase().includes(q)) ||
         (req.police_number && req.police_number.toLowerCase().includes(q))
       );
     }
@@ -92,11 +98,11 @@ function MyRequests({ clientInfo }) {
   }, [filterStatus, filterType, searchQuery, requests]);
 
   return (
-    <div className="my-requests-container" style={{ backgroundColor: '#FAFBFD', minHeight: '100vh', paddingBottom: '2rem' }}>
-      <div className="my-requests-content" style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1rem' }}>
+    <div className="min-h-screen bg-comar-gray-bg pb-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         
-        {/* Full width filter panel */}
-        <div style={{ marginBottom: '2rem' }}>
+        {/* Filter panel */}
+        <div className="mb-6">
           <FilterPanel
             filterStatus={filterStatus}
             filterType={filterType}
@@ -107,26 +113,40 @@ function MyRequests({ clientInfo }) {
           />
         </div>
 
-        {/* Espace comprenant le compteur à gauche et le bouton à droite dans l'alignement */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <div className="requests-summary" style={{ margin: 0 }}>
-            <p style={{ margin: 0, color: '#6b7280', fontSize: '0.9rem' }}>Affichage de <strong>{filteredRequests.length}</strong> demande(s)</p>
-          </div>
-          <Link to="/soumettre-dossier" className="create-request-link" style={{ backgroundColor: '#214e9f', color: 'white', padding: '0.6rem 1.2rem', borderRadius: '6px', textDecoration: 'none', fontWeight: '600', boxShadow: '0 2px 4px rgba(33, 78, 159, 0.2)', backgroundImage: 'none', border: 'none', fontSize: '0.95rem' }}>
+        {/* Counter + New Request button */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
+          <p className="text-sm text-comar-gray-text">
+            Affichage de <strong className="text-comar-navy">{filteredRequests.length}</strong> demande(s)
+          </p>
+          <Link
+            to="/soumettre-dossier"
+            className="inline-flex items-center px-5 py-2.5 bg-comar-royal text-white text-sm font-semibold rounded-xl shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-200"
+          >
             + Nouvelle Demande
           </Link>
         </div>
 
+        {/* Content */}
         {loading ? (
-            <div className="loading-spinner" style={{ padding: '2rem', textAlign: 'center' }}>Chargement de vos demandes...</div>
+          <div className="text-center py-12">
+            <div className="w-8 h-8 border-4 border-comar-border border-t-comar-royal rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-comar-gray-text">Chargement de vos demandes...</p>
+          </div>
         ) : error ? (
-            <div className="error-message" style={{ color: 'red', padding: '1rem' }}>{error}</div>
+          <div className="flex items-center gap-2 px-5 py-4 rounded-xl bg-red-50 border border-red-200 text-comar-red text-sm font-medium">
+            {error}
+          </div>
         ) : filteredRequests.length > 0 ? (
           <RequestTable requests={filteredRequests} />
         ) : (
-          <div className="no-requests" style={{ padding: '3rem', textAlign: 'center', backgroundColor: 'white', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-            <p style={{ color: '#6b7280', marginBottom: '1rem' }}>Aucune demande trouvée.</p>        
-            <Link to="/soumettre-dossier" className="create-link" style={{ color: '#214e9f', fontWeight: '500', textDecoration: 'none' }}>Créer votre première demande</Link>
+          <div className="text-center py-16 bg-white rounded-xl border border-gray-100 shadow-md">
+            <p className="text-comar-gray-text mb-3">Aucune demande trouvée.</p>
+            <Link
+              to="/soumettre-dossier"
+              className="text-comar-royal font-semibold hover:text-comar-navy transition-colors duration-200"
+            >
+              Créer votre première demande
+            </Link>
           </div>
         )}
       </div>

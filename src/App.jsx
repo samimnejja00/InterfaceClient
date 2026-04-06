@@ -6,13 +6,13 @@ import Dashboard from './pages/Dashboard';
 import CreateRequest from './pages/CreateRequest';
 import MyRequests from './pages/MyRequests';
 import RequestDetails from './pages/RequestDetails';
+import MyAccount from './pages/MyAccount';
 
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import SoumettreDossier from './pages/SoumettreDossier';
 import Navigation from './components/Navigation';
 import Chatbot from './components/Chatbot';
-import './styles/App.css';
 
 // Protected route component
 function ProtectedRoute({ children }) {
@@ -20,31 +20,11 @@ function ProtectedRoute({ children }) {
   
   if (loading) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        backgroundColor: '#f5f5f5'
-      }}>
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <h1>PrestaTrack</h1>
-          <p>Chargement...</p>
-          <div style={{
-            width: '40px',
-            height: '40px',
-            border: '4px solid #e2e8f0',
-            borderTop: '4px solid #3b82f6',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            margin: '1rem auto'
-          }} />
-          <style>{`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}</style>
+      <div className="flex justify-center items-center h-screen bg-comar-gray-bg">
+        <div className="text-center p-8">
+          <h1 className="text-2xl font-bold text-comar-navy mb-2">PrestaTrack</h1>
+          <p className="text-comar-gray-text mb-4">Chargement...</p>
+          <div className="w-10 h-10 border-4 border-comar-border border-t-comar-royal rounded-full animate-spin mx-auto" />
         </div>
       </div>
     );
@@ -64,7 +44,7 @@ function AppContent() {
     id: client.id,
     name: client.nom_complet,
     email: client.email,
-    clientNumber: client.cin,
+    clientNumber: client.police_number || client.cin,
   } : null;
 
   return (
@@ -98,6 +78,12 @@ function AppContent() {
           <ProtectedRoute>
             <Navigation clientInfo={clientInfo} onLogout={logout} />
             <MyRequests clientInfo={clientInfo} />
+          </ProtectedRoute>
+        } />
+        <Route path="/mon-compte" element={
+          <ProtectedRoute>
+            <Navigation clientInfo={clientInfo} onLogout={logout} />
+            <MyAccount />
           </ProtectedRoute>
         } />
         <Route path="/request-details/:requestId" element={

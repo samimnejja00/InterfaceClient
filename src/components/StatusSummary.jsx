@@ -1,5 +1,4 @@
 import React from 'react';
-import '../styles/StatusSummary.css';
 
 // SVG Icons
 const ClockIcon = () => (
@@ -31,29 +30,31 @@ const XIcon = () => (
 
 function StatusSummary({ stats }) {
   const statuses = [
-    { key: 'enAttente', label: 'En attente', value: stats.enAttente || 0, color: '#FFA500', icon: <ClockIcon /> },
-    { key: 'enCours', label: 'En cours', value: stats.enCours || 0, color: '#4A90E2', icon: <EyeIcon /> },
-    { key: 'valide', label: 'Validé', value: stats.valide || 0, color: '#27AE60', icon: <CheckIcon /> },
-    { key: 'rejete', label: 'Rejeté', value: stats.rejete || 0, color: '#E74C3C', icon: <XIcon /> }
+    { key: 'enInstance', label: 'En instance', value: stats.enInstance || 0, color: '#F59E0B', bgColor: 'bg-amber-50', textColor: 'text-amber-600', icon: <ClockIcon /> },
+    { key: 'enCours', label: 'En cours', value: stats.enCours || 0, color: '#1E4FD8', bgColor: 'bg-blue-50', textColor: 'text-comar-royal', icon: <EyeIcon /> },
+    { key: 'cloture', label: 'Clôturé', value: stats.cloture || 0, color: '#10B981', bgColor: 'bg-emerald-50', textColor: 'text-emerald-600', icon: <CheckIcon /> },
+    { key: 'rejete', label: 'Rejeté', value: stats.rejete || 0, color: '#D42B2B', bgColor: 'bg-red-50', textColor: 'text-comar-red', icon: <XIcon /> }
   ];
 
-  const total = (stats.enAttente || 0) + (stats.enCours || 0) + (stats.valide || 0) + (stats.rejete || 0);
+  const total = (stats.enInstance || 0) + (stats.enCours || 0) + (stats.cloture || 0) + (stats.rejete || 0);
 
   return (
-    <div className="status-summary">
-      <div className="status-cards">
+    <div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         {statuses.map((status) => (
-          <div key={status.key} className="status-card">
-            <div className="status-icon" style={{ backgroundColor: status.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-              {status.icon}
+          <div key={status.key} className="bg-white rounded-xl shadow-md border border-gray-100 p-5 hover:shadow-lg transition-all duration-200">
+            <div className="flex items-center gap-3 mb-3">
+              <div className={`w-10 h-10 rounded-xl ${status.bgColor} ${status.textColor} flex items-center justify-center`}>
+                {status.icon}
+              </div>
+              <div>
+                <span className="block text-2xl font-bold text-comar-navy">{status.value}</span>
+                <span className="block text-xs font-medium text-comar-gray-text">{status.label}</span>
+              </div>
             </div>
-            <div className="status-details">
-              <span className="status-value">{status.value}</span>
-              <span className="status-label">{status.label}</span>
-            </div>
-            <div className="status-progress">
+            <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
               <div
-                className="progress-bar"
+                className="h-full rounded-full transition-all duration-500"
                 style={{
                   width: total > 0 ? `${(status.value / total) * 100}%` : '0%', 
                   backgroundColor: status.color
@@ -63,8 +64,10 @@ function StatusSummary({ stats }) {
           </div>
         ))}
       </div>
-      <div className="status-total">
-        <p><strong>Total de Demandes:</strong> {total}</p>
+      <div className="bg-white rounded-xl shadow-md border border-gray-100 px-5 py-3 text-center">
+        <p className="text-sm text-comar-gray-text">
+          <strong className="text-comar-navy">Total de Demandes:</strong> {total}
+        </p>
       </div>
     </div>
   );

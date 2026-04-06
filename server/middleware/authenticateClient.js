@@ -21,7 +21,8 @@ const authenticateClient = (req, res, next) => {
     req.client = {
       id: decoded.client_id,
       email: decoded.email,
-      nom_complet: decoded.nom_complet
+      nom_complet: decoded.nom_complet,
+      police_number: decoded.police_number || null,
     };
     next();
   } catch (error) {

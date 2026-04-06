@@ -3,8 +3,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const supabase = require('../config/supabase');
+const authenticateClient = require('../middleware/authenticateClient');
 
 const router = express.Router();
+const POLICE_NUMBER_REGEX = /^\d{8}-\d$/;
 
 // ─── Validation rules ───────────────────────────────────────────────
 const registerValidation = [
@@ -19,10 +21,12 @@ const registerValidation = [
   body('mot_de_passe')
     .notEmpty().withMessage('Le mot de passe est obligatoire.')
     .isLength({ min: 6 }).withMessage('Le mot de passe doit contenir au moins 6 caractères.'),
+  body('police_number')
+    .trim()
+    .notEmpty().withMessage('Le numéro de police est obligatoire.')
+    .matches(POLICE_NUMBER_REGEX)
+    .withMessage('Format numéro de police invalide. Format attendu: 12345678-9.'),
   body('telephone')
-    .optional({ checkFalsy: true })
-    .trim(),
-  body('cin')
     .optional({ checkFalsy: true })
     .trim(),
   body('adresse')
@@ -46,6 +50,7 @@ function generateToken(client) {
       client_id: client.id,
       email: client.email,
       nom_complet: client.nom_complet,
+      police_number: client.police_number || client.cin || null,
     },
     process.env.JWT_SECRET,
     { expiresIn: '7d' }
@@ -61,7 +66,8 @@ router.post('/register', registerValidation, async (req, res) => {
     return res.status(400).json({ success: false, message: messages[0], errors: messages });
   }
 
-  const { nom_complet, email, mot_de_passe, telephone, cin, adresse } = req.body;
+  const { nom_complet, email, mot_de_passe, telephone, adresse, police_number } = req.body;
+  const normalizedPoliceNumber = (police_number || '').trim();
 
   try {
     // Check if email already exists
@@ -78,20 +84,18 @@ router.post('/register', registerValidation, async (req, res) => {
       });
     }
 
-    // Check if CIN already exists (if provided)
-    if (cin) {
-      const { data: existingByCin } = await supabase
-        .from('clients')
-        .select('id')
-        .eq('cin', cin)
-        .maybeSingle();
+    // The DB currently stores contract number in clients.cin for compatibility.
+    const { data: existingByPolice } = await supabase
+      .from('clients')
+      .select('id')
+      .eq('cin', normalizedPoliceNumber)
+      .maybeSingle();
 
-      if (existingByCin) {
-        return res.status(409).json({
-          success: false,
-          message: 'Ce numéro CIN est déjà enregistré.'
-        });
-      }
+    if (existingByPolice) {
+      return res.status(409).json({
+        success: false,
+        message: 'Ce numéro de police est déjà enregistré.'
+      });
     }
 
     // Hash password
@@ -105,7 +109,7 @@ router.post('/register', registerValidation, async (req, res) => {
         nom_complet,
         email,
         telephone: telephone || null,
-        cin: cin || null,
+        cin: normalizedPoliceNumber,
         adresse: adresse || null,
         mot_de_passe_hash,
         is_active: true,
@@ -133,6 +137,7 @@ router.post('/register', registerValidation, async (req, res) => {
         nom_complet: newClient.nom_complet,
         email: newClient.email,
         telephone: newClient.telephone,
+        police_number: newClient.cin,
         cin: newClient.cin,
         adresse: newClient.adresse,
       }
@@ -207,6 +212,7 @@ router.post('/login', loginValidation, async (req, res) => {
         nom_complet: client.nom_complet,
         email: client.email,
         telephone: client.telephone,
+        police_number: client.police_number || client.cin,
         cin: client.cin,
         adresse: client.adresse,
       }
@@ -216,6 +222,54 @@ router.post('/login', loginValidation, async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Erreur interne du serveur. Veuillez réessayer.'
+    });
+  }
+});
+
+// ─── GET /api/clients/me ───────────────────────────────────────────
+router.get('/me', authenticateClient, async (req, res) => {
+  try {
+    const { data: client, error } = await supabase
+      .from('clients')
+      .select('id, nom_complet, email, telephone, cin, adresse, is_active, created_at, updated_at')
+      .eq('id', req.client.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Profile fetch error:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Erreur lors du chargement du profil.'
+      });
+    }
+
+    if (!client) {
+      return res.status(404).json({
+        success: false,
+        message: 'Profil client introuvable.'
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      client: {
+        id: client.id,
+        nom_complet: client.nom_complet,
+        email: client.email,
+        telephone: client.telephone,
+        police_number: client.cin,
+        cin: client.cin,
+        adresse: client.adresse,
+        is_active: client.is_active,
+        created_at: client.created_at,
+        updated_at: client.updated_at,
+      }
+    });
+  } catch (error) {
+    console.error('Profile route error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Erreur interne du serveur.'
     });
   }
 });

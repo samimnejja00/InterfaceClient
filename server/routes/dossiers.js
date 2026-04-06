@@ -6,6 +6,19 @@ const authenticateClient = require('../middleware/authenticateClient');
 
 const router = express.Router();
 
+const DEMANDE_INITIALE_OPTIONS = [
+  'Rachat Total',
+  'Rachat Partiel',
+  'Rachat Échu',
+  'Transfert Contrat',
+  'Autre',
+];
+const POLICE_NUMBER_REGEX = /^\d{8}-\d$/;
+
+function buildRequestNumber(dossierId) {
+  return `DEM-${String(dossierId || '').slice(0, 8).toUpperCase()}`;
+}
+
 // Multer setup for memory storage (file buffers)
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -19,24 +32,21 @@ router.use(authenticateClient);
 
 // ─── Validation rules ───────────────────────────────────────────────
 const dossierValidation = [
-  body('souscripteur')
-    .trim()
-    .notEmpty().withMessage('Le nom du souscripteur est obligatoire.'),
-  body('police_number')
-    .trim()
-    .notEmpty().withMessage('Le numéro de police est obligatoire.'),
   body('agence_id')
     .trim()
     .notEmpty().withMessage("L'agence est obligatoire.")
     .isUUID().withMessage("Identifiant d'agence invalide."),
-  body('type_prestation')
-    .trim()
-    .notEmpty().withMessage('Le type de prestation est obligatoire.')
-    .isIn(['Décès', 'Rachat', 'Échéance']).withMessage('Type de prestation invalide. Valeurs acceptées : Décès, Rachat, Échéance.'),
   body('demande_initiale')
     .trim()
-    .notEmpty().withMessage('La description de la demande est obligatoire.')
-    .isLength({ min: 10 }).withMessage('La description doit contenir au moins 10 caractères.'),
+    .notEmpty().withMessage('La demande initiale est obligatoire.')
+    .isIn([...DEMANDE_INITIALE_OPTIONS, 'Rachat Echu']).withMessage('Demande initiale invalide.'),
+  body('motif_instance')
+    .trim()
+    .notEmpty().withMessage("Le motif d'instance est obligatoire.")
+    .isLength({ min: 5 }).withMessage("Le motif d'instance doit contenir au moins 5 caractères."),
+  body('telephone')
+    .optional({ checkFalsy: true })
+    .trim(),
 ];
 
 // ─── GET /api/dossiers/agences — Liste des agences ──────────────────
@@ -76,10 +86,50 @@ router.post('/', upload.single('piece_justificative'), dossierValidation, async 
     return res.status(400).json({ success: false, message: messages[0], errors: messages });
   }
 
-  const { souscripteur, police_number, agence_id, type_prestation, demande_initiale } = req.body;
+  const { agence_id, demande_initiale, motif_instance, telephone } = req.body;
   const client_id = req.client.id;
+  const normalizedDemandeInitiale = demande_initiale === 'Rachat Echu' ? 'Rachat Échu' : demande_initiale;
 
   try {
+    // Resolve client identity and contract number from account.
+    const { data: clientProfile, error: clientError } = await supabase
+      .from('clients')
+      .select('nom_complet, cin')
+      .eq('id', client_id)
+      .maybeSingle();
+
+    if (clientError) {
+      console.error('Client profile fetch error:', clientError);
+      return res.status(500).json({
+        success: false,
+        message: 'Erreur lors de la récupération du profil client.'
+      });
+    }
+
+    const souscripteur = clientProfile?.nom_complet || req.client.nom_complet;
+    const policeNumber = (clientProfile?.cin || req.client.police_number || '').trim();
+
+    if (!souscripteur) {
+      return res.status(400).json({
+        success: false,
+        message: 'Impossible de déterminer le souscripteur depuis votre compte.'
+      });
+    }
+
+    if (!policeNumber) {
+      return res.status(400).json({
+        success: false,
+        message: 'Aucun numéro de police trouvé sur votre compte. Veuillez contacter le support.'
+      });
+    }
+
+    if (!POLICE_NUMBER_REGEX.test(policeNumber)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Le numéro de police de votre compte est invalide. Format attendu: 12345678-9.'
+      });
+    }
+
     // Verify agence exists
     const { data: agence } = await supabase
       .from('agences')
@@ -131,7 +181,7 @@ router.post('/', upload.single('piece_justificative'), dossierValidation, async 
       .from('dossiers')
       .insert({
         souscripteur,
-        police_number,
+        police_number: policeNumber,
         agence_id,
         client_id,
         niveau: 'RELATION_CLIENT',
@@ -140,7 +190,7 @@ router.post('/', upload.single('piece_justificative'), dossierValidation, async 
         created_by: null, // Client, not an internal agent
         piece_justificative_url // On l'ajoute ici
       })
-      .select('id, souscripteur, police_number, niveau, etat, is_urgent, montant, created_at')
+      .select('id, souscripteur, police_number, niveau, etat, is_urgent, created_at')
       .single();
 
     if (dossierError) {
@@ -151,14 +201,15 @@ router.post('/', upload.single('piece_justificative'), dossierValidation, async 
       });
     }
 
-    // Step 2: Create dossier_details_rc (includes type_prestation in demande_initiale)
+    // Step 2: Create dossier_details_rc using the same structure as internal platform
     const { error: detailsError } = await supabase
       .from('dossier_details_rc')
       .insert({
         dossier_id: dossier.id,
         date_reception: new Date().toISOString().split('T')[0], // TODAY
-        demande_initiale: `[${type_prestation}] ${demande_initiale}`,
-        motif_instance: `Nouvelle demande client - ${type_prestation}`,
+        telephone: telephone || null,
+        demande_initiale: normalizedDemandeInitiale,
+        motif_instance,
       });
 
     if (detailsError) {
@@ -177,9 +228,10 @@ router.post('/', upload.single('piece_justificative'), dossierValidation, async 
       .insert({
         dossier_id: dossier.id,
         user_id: null,
-        action: `Dossier soumis par le client (${type_prestation})`,
+        action: 'Dossier soumis par le client',
+        description: `Demande initiale: ${normalizedDemandeInitiale}`,
         old_status: null,
-        new_status: 'EN_COURS',
+        new_status: 'RELATION_CLIENT',
       });
 
     return res.status(201).json({
@@ -187,11 +239,13 @@ router.post('/', upload.single('piece_justificative'), dossierValidation, async 
       message: 'Votre dossier a été soumis avec succès !',
       dossier: {
         id: dossier.id,
+        request_number: buildRequestNumber(dossier.id),
         souscripteur: dossier.souscripteur,
         police_number: dossier.police_number,
         niveau: dossier.niveau,
         etat: dossier.etat,
-        type_prestation,
+        demande_initiale: normalizedDemandeInitiale,
+        motif_instance,
         created_at: dossier.created_at,
       }
     });
@@ -210,7 +264,7 @@ router.get('/', async (req, res) => {
     const { data: dossiers, error } = await supabase
       .from('dossiers')
       .select(`
-        id, souscripteur, police_number, niveau, etat, is_urgent, montant, created_at, updated_at,
+        id, souscripteur, police_number, niveau, etat, is_urgent, created_at, updated_at,
         agences ( id, nom, code ),
         dossier_details_rc ( date_reception, demande_initiale, motif_instance )
       `)
@@ -227,7 +281,10 @@ router.get('/', async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      data: dossiers || []
+      data: (dossiers || []).map((dossier) => ({
+        ...dossier,
+        request_number: buildRequestNumber(dossier.id),
+      }))
     });
   } catch (error) {
     console.error('Dossiers error:', error);
@@ -265,7 +322,10 @@ router.get('/:id', async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      data: dossier,
+      data: {
+        ...dossier,
+        request_number: buildRequestNumber(dossier.id),
+      },
       historique: historique || []
     });
   } catch (error) {

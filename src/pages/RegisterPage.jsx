@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { registerClient } from '../services/clientApi';
-import '../styles/LoginPage.css';
+
+const POLICE_NUMBER_REGEX = /^\d{8}-\d$/;
 
 function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -10,8 +11,8 @@ function RegisterPage() {
     email: '',
     mot_de_passe: '',
     confirm_password: '',
+    police_number: '',
     telephone: '',
-    cin: '',
     adresse: '',
   });
   const [error, setError] = useState('');
@@ -21,7 +22,20 @@ function RegisterPage() {
   const { setAuthClient } = useAuth();
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    if (name === 'police_number') {
+      // Normalize legacy dash variants and keep only digits with one inserted dash (8+1 format).
+      const digits = value
+        .replace(/[\u2010-\u2015\u2212]/g, '-')
+        .replace(/\D/g, '')
+        .slice(0, 9);
+      const formatted = digits.length > 8 ? `${digits.slice(0, 8)}-${digits.slice(8)}` : digits;
+      setFormData({ ...formData, police_number: formatted });
+      return;
+    }
+
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = async (e) => {
@@ -29,7 +43,7 @@ function RegisterPage() {
     setError('');
 
     // Validation côté client
-    if (!formData.nom_complet || !formData.email || !formData.mot_de_passe) {
+    if (!formData.nom_complet || !formData.email || !formData.mot_de_passe || !formData.police_number) {
       setError('Veuillez remplir tous les champs obligatoires.');
       return;
     }
@@ -44,14 +58,19 @@ function RegisterPage() {
       return;
     }
 
+    if (!POLICE_NUMBER_REGEX.test(formData.police_number.trim())) {
+      setError('Format numéro de police invalide. Format attendu: 12345678-9.');
+      return;
+    }
+
     setLoading(true);
     try {
       const result = await registerClient({
         nom_complet: formData.nom_complet,
         email: formData.email,
         mot_de_passe: formData.mot_de_passe,
+        police_number: formData.police_number.trim(),
         telephone: formData.telephone || null,
-        cin: formData.cin || null,
         adresse: formData.adresse || null,
       });
 
@@ -70,16 +89,16 @@ function RegisterPage() {
 
   if (success) {
     return (
-      <div className="login-container">
-        <div className="login-card">
-          <div className="login-header">
-            <div className="login-logo">
-              <img src="/logo-comar.png" alt="COMAR Assurances" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-comar-navy via-comar-navy to-comar-royal px-4 py-12">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 sm:p-10 animate-fade-in">
+          <div className="text-center mb-6">
+            <div className="mb-4 flex justify-center">
+              <img src="/logo-comar.png" alt="COMAR Assurances" className="h-16 w-auto rounded-xl" />
             </div>
-            <h1>Compte créé !</h1>
-            <p className="subtitle">Votre compte client COMAR a été créé avec succès. Redirection en cours...</p>
+            <h1 className="text-2xl font-bold text-comar-navy">Compte créé !</h1>
+            <p className="text-sm text-comar-gray-text mt-2">Votre compte client COMAR a été créé avec succès. Redirection en cours...</p>
           </div>
-          <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <div className="flex justify-center py-6">
             <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
               <polyline points="22 4 12 14.01 9 11.01"/>
@@ -90,26 +109,32 @@ function RegisterPage() {
     );
   }
 
+  const inputClasses = "w-full px-4 py-3 rounded-xl border border-gray-200 bg-comar-gray-bg text-comar-navy placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-comar-royal/40 focus:border-comar-royal transition-all duration-200 disabled:opacity-50";
+
   return (
-    <div className="login-container">
-      <div className="login-card" style={{ maxWidth: '460px' }}>
-        <div className="login-header">
-          <div className="login-logo">
-            <img src="/logo-comar.png" alt="COMAR Assurances" />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-comar-navy via-comar-navy to-comar-royal px-4 py-12">
+      <div className="w-full max-w-[460px] bg-white rounded-2xl shadow-2xl p-8 sm:p-10 animate-fade-in">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="mb-4 flex justify-center">
+            <img src="/logo-comar.png" alt="COMAR Assurances" className="h-16 w-auto rounded-xl" />
           </div>
-          <h1>Créer votre compte</h1>
-          <p className="subtitle">Accédez à votre espace client COMAR Assurances</p>
+          <h1 className="text-2xl font-bold text-comar-navy">Créer votre compte</h1>
+          <p className="text-sm text-comar-gray-text mt-1">Accédez à votre espace client COMAR Assurances</p>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="error-message" style={{ marginBottom: '1rem', textAlign: 'center' }}>
+            <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-comar-red text-sm font-medium text-center">
               {error}
             </div>
           )}
 
-          <div className="form-group">
-            <label htmlFor="nom_complet">Nom complet *</label>
+          <div>
+            <label htmlFor="nom_complet" className="block text-sm font-medium text-comar-navy mb-1.5">
+              Nom complet *
+            </label>
             <input
               type="text"
               id="nom_complet"
@@ -119,11 +144,14 @@ function RegisterPage() {
               placeholder="Ex: Ahmed Ben Ali"
               disabled={loading}
               required
+              className={inputClasses}
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="email">Adresse email *</label>
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-comar-navy mb-1.5">
+              Adresse email *
+            </label>
             <input
               type="email"
               id="email"
@@ -133,12 +161,15 @@ function RegisterPage() {
               placeholder="votre@email.com"
               disabled={loading}
               required
+              className={inputClasses}
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div className="form-group">
-              <label htmlFor="mot_de_passe">Mot de passe *</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="mot_de_passe" className="block text-sm font-medium text-comar-navy mb-1.5">
+                Mot de passe *
+              </label>
               <input
                 type="password"
                 id="mot_de_passe"
@@ -148,10 +179,13 @@ function RegisterPage() {
                 placeholder="Min. 6 caractères"
                 disabled={loading}
                 required
+                className={inputClasses}
               />
             </div>
-            <div className="form-group">
-              <label htmlFor="confirm_password">Confirmer *</label>
+            <div>
+              <label htmlFor="confirm_password" className="block text-sm font-medium text-comar-navy mb-1.5">
+                Confirmer *
+              </label>
               <input
                 type="password"
                 id="confirm_password"
@@ -161,13 +195,16 @@ function RegisterPage() {
                 placeholder="Répétez le mot de passe"
                 disabled={loading}
                 required
+                className={inputClasses}
               />
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div className="form-group">
-              <label htmlFor="telephone">Téléphone</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="telephone" className="block text-sm font-medium text-comar-navy mb-1.5">
+                Téléphone
+              </label>
               <input
                 type="tel"
                 id="telephone"
@@ -176,24 +213,36 @@ function RegisterPage() {
                 onChange={handleChange}
                 placeholder="Ex: +216 XX XXX XXX"
                 disabled={loading}
+                className={inputClasses}
               />
             </div>
-            <div className="form-group">
-              <label htmlFor="cin">CIN</label>
+            <div>
+              <label htmlFor="police_number" className="block text-sm font-medium text-comar-navy mb-1.5">
+                N° Police (Contrat) *
+              </label>
               <input
                 type="text"
-                id="cin"
-                name="cin"
-                value={formData.cin}
+                id="police_number"
+                name="police_number"
+                value={formData.police_number}
                 onChange={handleChange}
-                placeholder="Numéro CIN"
+                placeholder="Ex: 12345678-9"
                 disabled={loading}
+                required
+                maxLength={10}
+                inputMode="numeric"
+                pattern="[0-9]{8}-[0-9]"
+                title="Format attendu: 12345678-9"
+                className={inputClasses}
               />
+              <p className="mt-1 text-xs text-comar-gray-text">Format requis: 8 chiffres, tiret, 1 chiffre (ex: 12345678-9)</p>
             </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="adresse">Adresse</label>
+          <div>
+            <label htmlFor="adresse" className="block text-sm font-medium text-comar-navy mb-1.5">
+              Adresse
+            </label>
             <input
               type="text"
               id="adresse"
@@ -202,28 +251,30 @@ function RegisterPage() {
               onChange={handleChange}
               placeholder="Votre adresse complète"
               disabled={loading}
+              className={inputClasses}
             />
           </div>
 
           <button
             type="submit"
-            className="login-button"
+            className="w-full py-3.5 bg-comar-royal text-white font-semibold rounded-xl shadow-md hover:bg-blue-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-comar-royal/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={loading}
-            style={{ background: loading ? '#94a3b8' : '', cursor: loading ? 'not-allowed' : 'pointer' }}
           >
             {loading ? 'Création en cours...' : 'Créer mon compte'}
           </button>
         </form>
 
-        <div className="signup-link" style={{ marginTop: '1.5rem', textAlign: 'center', padding: '1rem', background: '#f8fafc', borderRadius: '0.5rem' }}>
-          <span style={{ color: '#475569', fontSize: '0.875rem' }}>Déjà un compte client ? </span>
-          <Link to="/login" style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none', fontSize: '0.875rem' }}>
+        {/* Login link */}
+        <div className="mt-6 text-center p-4 bg-comar-gray-bg rounded-xl">
+          <span className="text-sm text-comar-gray-text">Déjà un compte client ? </span>
+          <Link to="/login" className="text-sm font-semibold text-comar-royal hover:text-comar-navy transition-colors duration-200">
             Se connecter
           </Link>
         </div>
 
-        <div className="login-footer" style={{ marginTop: '2rem' }}>
-          <p>© 2026 COMAR Assurances — PrestaTrack</p>
+        {/* Footer */}
+        <div className="mt-6 pt-6 border-t border-gray-100 text-center">
+          <p className="text-xs text-gray-400">© 2026 COMAR Assurances — PrestaTrack</p>
         </div>
       </div>
     </div>

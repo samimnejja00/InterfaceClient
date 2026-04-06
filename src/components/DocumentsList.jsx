@@ -1,5 +1,4 @@
 import React from 'react';
-import '../styles/DocumentsList.css';
 
 function DocumentsList({ documents }) {
   const formatFileSize = (bytes) => {
@@ -11,38 +10,47 @@ function DocumentsList({ documents }) {
   };
 
   return (
-    <div className="documents-list">
+    <div>
       {documents && documents.length > 0 ? (
-        <table className="documents-table">
-          <thead>
-            <tr>
-              <th>Nom du Document</th>
-              <th>Date de Téléchargement</th>
-              <th>Taille</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {documents.map((doc) => (
-              <tr key={doc.id}>
-                <td className="doc-name">
-                  <span className="doc-icon">📄</span>
-                  <span>{doc.name}</span>
-                </td>
-                <td className="doc-date">{doc.uploadDate}</td>
-                <td className="doc-size">{doc.size}</td>
-                <td className="doc-action">
-                  <button className="download-btn" title="Télécharger le document">
-                    📥 Télécharger
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-comar-gray-bg/50 border-b border-gray-100">
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-comar-gray-text uppercase tracking-wider">Nom du Document</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-comar-gray-text uppercase tracking-wider hidden sm:table-cell">Date de Téléchargement</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-comar-gray-text uppercase tracking-wider hidden sm:table-cell">Taille</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-comar-gray-text uppercase tracking-wider">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {documents.map((doc) => (
+                  <tr key={doc.id} className="hover:bg-comar-gray-bg/30 transition-colors duration-150">
+                    <td className="px-5 py-4 text-sm text-comar-navy font-medium">
+                      <span className="inline-flex items-center gap-2">
+                        <span>📄</span>
+                        <span>{doc.name}</span>
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 text-sm text-comar-gray-text hidden sm:table-cell">{doc.uploadDate}</td>
+                    <td className="px-5 py-4 text-sm text-comar-gray-text hidden sm:table-cell">{doc.size}</td>
+                    <td className="px-5 py-4">
+                      <button 
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-comar-royal bg-comar-royal/10 rounded-lg hover:bg-comar-royal/20 transition-all duration-200"
+                        title="Télécharger le document"
+                      >
+                        📥 Télécharger
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       ) : (
-        <div className="no-documents">
-          <p>Aucun document téléchargé</p>
+        <div className="text-center py-12 bg-white rounded-xl shadow-md border border-gray-100">
+          <p className="text-sm text-comar-gray-text">Aucun document téléchargé</p>
         </div>
       )}
     </div>

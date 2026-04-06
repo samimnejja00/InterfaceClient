@@ -20,11 +20,11 @@ async function handleResponse(response) {
 
 // ─── Client Auth API ────────────────────────────────────────────────
 
-export async function registerClient({ nom_complet, email, mot_de_passe, telephone, cin, adresse }) {
+export async function registerClient({ nom_complet, email, mot_de_passe, police_number, telephone, adresse }) {
   const res = await fetch(`${API_BASE}/clients/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nom_complet, email, mot_de_passe, telephone, cin, adresse }),
+    body: JSON.stringify({ nom_complet, email, mot_de_passe, police_number, telephone, adresse }),
   });
   const data = await handleResponse(res);
   if (data.token) {
@@ -66,6 +66,37 @@ export function getStoredClient() {
 
 export function isClientAuthenticated() {
   return !!localStorage.getItem('client_token');
+}
+
+export async function fetchClientProfile() {
+  const endpoints = [`${API_BASE}/clients/me`, `${API_BASE}/clients/profile`];
+  let lastError = null;
+
+  for (const endpoint of endpoints) {
+    try {
+      const res = await fetch(endpoint, {
+        headers: getAuthHeaders(),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        return data.client || data.data || data;
+      }
+
+      if (res.status !== 404) {
+        throw new Error(data.message || 'Une erreur est survenue.');
+      }
+
+      lastError = new Error(data.message || 'Route non trouvée.');
+    } catch (error) {
+      lastError = error;
+      if (!String(error?.message || '').toLowerCase().includes('route non trouv')) {
+        throw error;
+      }
+    }
+  }
+
+  throw lastError || new Error('Route non trouvée.');
 }
 
 // ─── Dossier API ────────────────────────────────────────────────────

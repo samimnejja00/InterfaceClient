@@ -1,5 +1,4 @@
 import React from 'react';
-import './LanguageSelector.css';
 
 const LanguageSelector = ({ selectedLanguage, onLanguageChange, currentStep }) => {
   const languages = [
@@ -10,22 +9,26 @@ const LanguageSelector = ({ selectedLanguage, onLanguageChange, currentStep }) =
   ];
 
   return (
-    <div className="language-selector">
-      <div className="language-buttons">
+    <div className="flex flex-col items-center gap-3">
+      <div className="flex flex-wrap justify-center gap-2">
         {languages.map((lang) => (
           <button
             key={lang.code}
             onClick={() => onLanguageChange(lang.code)}
-            className={`language-button ${selectedLanguage === lang.code ? 'active' : ''}`}
+            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium border transition-all duration-200 ${
+              selectedLanguage === lang.code
+                ? 'bg-comar-royal text-white border-comar-royal shadow-md'
+                : 'bg-white text-comar-navy border-gray-200 hover:border-comar-royal/30 hover:bg-comar-gray-bg'
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
             disabled={currentStep > 0}
           >
-            <span className="flag">{lang.flag}</span>
-            <span className="lang-name">{lang.name}</span>
+            <span className="text-lg">{lang.flag}</span>
+            <span>{lang.name}</span>
           </button>
         ))}
       </div>
       {currentStep > 0 && (
-        <p className="language-locked">
+        <p className="text-xs text-comar-gray-text italic">
           {selectedLanguage === 'tn' ? 'اللغة المختارة' : 
            selectedLanguage === 'ar' ? 'اللغة المختارة' : 
            selectedLanguage === 'en' ? 'Selected Language' : 
