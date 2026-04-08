@@ -1,7 +1,68 @@
 import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const CHATBOT_API_URL = process.env.REACT_APP_CHATBOT_URL || "http://127.0.0.1:5001/chat";
+
+function renderBotMessageWithLinks(text) {
+  const lines = String(text || "").split("\n");
+
+  return lines.map((line, lineIndex) => {
+    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    const nodes = [];
+    let cursor = 0;
+    let match;
+
+    while ((match = linkRegex.exec(line)) !== null) {
+      const [raw, label, href] = match;
+
+      if (match.index > cursor) {
+        nodes.push(line.slice(cursor, match.index));
+      }
+
+      const target = String(href || "").trim();
+      const commonClassName =
+        "font-semibold text-comar-royal underline decoration-comar-royal/60 underline-offset-2 hover:text-comar-navy";
+
+      if (target.startsWith("/")) {
+        nodes.push(
+          <Link key={`link-${lineIndex}-${match.index}`} to={target} className={commonClassName}>
+            {label}
+          </Link>
+        );
+      } else {
+        nodes.push(
+          <a
+            key={`link-${lineIndex}-${match.index}`}
+            href={target}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={commonClassName}
+          >
+            {label}
+          </a>
+        );
+      }
+
+      cursor = match.index + raw.length;
+    }
+
+    if (cursor < line.length) {
+      nodes.push(line.slice(cursor));
+    }
+
+    if (!nodes.length) {
+      nodes.push(line);
+    }
+
+    return (
+      <span key={`line-${lineIndex}`}>
+        {nodes}
+        {lineIndex < lines.length - 1 && <br />}
+      </span>
+    );
+  });
+}
 
 export default function Chatbot() {
   const { client } = useAuth();
@@ -99,7 +160,7 @@ export default function Chatbot() {
                   : "bg-comar-royal text-white rounded-br-md self-end ml-auto"
               }`}
             >
-              {msg.text}
+              {msg.from === "bot" ? renderBotMessageWithLinks(msg.text) : msg.text}
             </div>
           ))}
           {isLoading && (
