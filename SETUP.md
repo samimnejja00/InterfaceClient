@@ -143,6 +143,40 @@ export const fetchRequests = (clientId) => {
 };
 ```
 
+## Email Notifications (Dossier Progress)
+
+Le backend `InterfaceClient/server` inclut maintenant un worker d'emailing qui surveille
+la table `historique_actions` et envoie un email quand un dossier evolue.
+
+1. Installer les dependances serveur:
+```bash
+cd server
+npm install
+```
+
+2. Configurer `server/.env` avec SMTP:
+```env
+EMAIL_NOTIFIER_ENABLED=true
+EMAIL_NOTIFIER_POLL_MS=30000
+EMAIL_NOTIFIER_STATE_FILE=.cache/email-notifier-state.json
+
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your_smtp_user_here
+SMTP_PASS=your_smtp_password_here
+SMTP_FROM="COMAR Notifications <no-reply@comar.tn>"
+```
+
+3. Lancer l'API serveur:
+```bash
+npm start
+```
+
+4. Verifier la configuration:
+- `GET /api/notifications/emailing/status`
+- `POST /api/notifications/emailing/test` (avec token client, et `dossier_id` optionnel)
+
 ## Performance Optimization
 
 - React Router for efficient page navigation

@@ -2,8 +2,11 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
+const supabase = require('./config/supabase');
 const clientRoutes = require('./routes/clients');
 const dossierRoutes = require('./routes/dossiers');
+const notificationRoutes = require('./routes/notifications');
+const { startEmailNotifier } = require('./services/emailNotifier');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -24,6 +27,7 @@ app.use(express.json());
 // ─── Routes ─────────────────────────────────────────────────────────
 app.use('/api/clients', clientRoutes);
 app.use('/api/dossiers', dossierRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // ─── Health check ───────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
@@ -42,7 +46,27 @@ app.use((err, req, res, next) => {
 });
 
 // ─── Start server ───────────────────────────────────────────────────
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`\n🚀 PrestaTrack API is running on http://localhost:${PORT}`);
   console.log(`   Health check: http://localhost:${PORT}/api/health\n`);
 });
+
+const stopEmailNotifier = startEmailNotifier({ supabase });
+
+function shutdown(signal) {
+  console.log(`\n[Server] ${signal} recu. Arret en cours...`);
+  try {
+    stopEmailNotifier();
+  } catch (error) {
+    console.error('[Server] Erreur arret EmailNotifier:', error.message);
+  }
+
+  server.close(() => {
+    process.exit(0);
+  });
+
+  setTimeout(() => process.exit(0), 2000).unref();
+}
+
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));

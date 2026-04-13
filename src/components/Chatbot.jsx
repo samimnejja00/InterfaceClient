@@ -4,6 +4,22 @@ import { useAuth } from "../context/AuthContext";
 
 const CHATBOT_API_URL = process.env.REACT_APP_CHATBOT_URL || "http://127.0.0.1:5001/chat";
 
+const QUICK_REPLY_OPTIONS = [
+  { label: "Suivre mon dossier", message: "je veux suivre mon dossier" },
+  { label: "Montant", message: "quel est le montant de mon dossier" },
+  { label: "Délai", message: "quel est le délai de traitement" },
+  { label: "Documents", message: "quels documents sont manquants" },
+  { label: "Mes dossiers", message: "afficher mes dossiers" },
+  { label: "Mot de passe", message: "j'ai oublié mon mot de passe" },
+];
+
+function createSessionId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return `web-${crypto.randomUUID()}`;
+  }
+  return `web-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 function renderBotMessageWithLinks(text) {
   const lines = String(text || "").split("\n");
 
@@ -73,7 +89,8 @@ export default function Chatbot() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
-  const sessionIdRef = useRef(`web-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`);
+  const sessionIdRef = useRef(createSessionId());
+  const sessionPrimedRef = useRef(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -83,16 +100,41 @@ export default function Chatbot() {
     scrollToBottom();
   }, [messages, isLoading, isOpen]);
 
-  const sendMessage = async () => {
-    const messageToSend = input.trim();
-    if (!messageToSend) return;
+  const primeChatSession = async () => {
+    if (sessionPrimedRef.current) return;
+
+    try {
+      await fetch(CHATBOT_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: "recommencer",
+          user_id: null,
+          client_id: null,
+          session_id: sessionIdRef.current,
+        }),
+      });
+    } catch (_) {
+      // Le reset silencieux est best-effort : on continue le flux normal même en cas d'échec.
+    } finally {
+      sessionPrimedRef.current = true;
+    }
+  };
+
+  const sendMessageText = async (rawText, { clearInput = false } = {}) => {
+    const messageToSend = String(rawText || "").trim();
+    if (!messageToSend || isLoading) return;
 
     const userMessage = { from: "user", text: messageToSend };
     setMessages((prev) => [...prev, userMessage]);
-    setInput("");
+    if (clearInput) {
+      setInput("");
+    }
     setIsLoading(true);
 
     try {
+      await primeChatSession();
+
       const res = await fetch(CHATBOT_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -121,6 +163,14 @@ export default function Chatbot() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const sendMessage = async () => {
+    await sendMessageText(input, { clearInput: true });
+  };
+
+  const sendQuickReply = async (message) => {
+    await sendMessageText(message);
   };
 
   const toggleChat = () => {
@@ -171,6 +221,23 @@ export default function Chatbot() {
             </div>
           )}
           <div ref={messagesEndRef} />
+        </div>
+
+        {/* Quick Replies */}
+        <div className="shrink-0 px-3 pt-2 pb-1 bg-white border-t border-gray-100">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            {QUICK_REPLY_OPTIONS.map((option) => (
+              <button
+                key={option.label}
+                type="button"
+                className="shrink-0 px-3 py-1.5 rounded-full border border-comar-royal/25 bg-comar-royal/5 text-comar-royal text-xs font-semibold hover:bg-comar-royal hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => sendQuickReply(option.message)}
+                disabled={isLoading}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Input Area */}
