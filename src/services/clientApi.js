@@ -99,6 +99,32 @@ export async function fetchClientProfile() {
   throw lastError || new Error('Route non trouvée.');
 }
 
+export async function requestPasswordReset({ email }) {
+  const res = await fetch(`${API_BASE}/clients/password-reset/request`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  return handleResponse(res);
+}
+
+export async function verifyPasswordResetToken(token) {
+  const res = await fetch(`${API_BASE}/clients/password-reset/verify?token=${encodeURIComponent(token)}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  return handleResponse(res);
+}
+
+export async function confirmPasswordReset({ token, mot_de_passe }) {
+  const res = await fetch(`${API_BASE}/clients/password-reset/confirm`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, mot_de_passe }),
+  });
+  return handleResponse(res);
+}
+
 // ─── Dossier API ────────────────────────────────────────────────────
 
 export async function fetchAgences() {

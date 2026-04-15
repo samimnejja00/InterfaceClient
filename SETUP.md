@@ -166,6 +166,9 @@ SMTP_SECURE=false
 SMTP_USER=your_smtp_user_here
 SMTP_PASS=your_smtp_password_here
 SMTP_FROM="COMAR Notifications <no-reply@comar.tn>"
+
+CLIENT_APP_BASE_URL=http://localhost:3000
+CLIENT_PASSWORD_RESET_TOKEN_EXPIRY=20m
 ```
 
 3. Lancer l'API serveur:
@@ -176,6 +179,16 @@ npm start
 4. Verifier la configuration:
 - `GET /api/notifications/emailing/status`
 - `POST /api/notifications/emailing/test` (avec token client, et `dossier_id` optionnel)
+
+## Changement de mot de passe par email
+
+Le serveur expose aussi un flux de confirmation email pour le changement de mot de passe client.
+
+- `POST /api/clients/password-reset/request` avec `{ "email": "..." }`
+- `GET /api/clients/password-reset/verify?token=...`
+- `POST /api/clients/password-reset/confirm` avec `{ "token": "...", "mot_de_passe": "..." }`
+
+Le lien envoye par email pointe vers `CLIENT_APP_BASE_URL/reset-password?token=...`.
 
 ## Performance Optimization
 

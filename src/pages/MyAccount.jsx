@@ -144,6 +144,14 @@ function MyAccount() {
             >
               Soumettre une demande
             </Link>
+            {profile?.email && (
+              <Link
+                to={`/forgot-password?email=${encodeURIComponent(profile.email)}`}
+                className="inline-flex items-center px-5 py-2.5 bg-white text-comar-royal text-sm font-semibold rounded-xl border border-comar-royal/30 hover:bg-comar-royal/5 transition-all duration-200"
+              >
+                Changer mon mot de passe
+              </Link>
+            )}
           </div>
         </section>
       </div>

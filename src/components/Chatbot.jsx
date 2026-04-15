@@ -10,7 +10,7 @@ const QUICK_REPLY_OPTIONS = [
   { label: "Délai", message: "quel est le délai de traitement" },
   { label: "Documents", message: "quels documents sont manquants" },
   { label: "Mes dossiers", message: "afficher mes dossiers" },
-  { label: "Mot de passe", message: "j'ai oublié mon mot de passe" },
+  { label: "Mot de passe", message: "je veux changer mon mot de passe" },
 ];
 
 function createSessionId() {

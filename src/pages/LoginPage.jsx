@@ -83,6 +83,15 @@ function LoginPage() {
             />
           </div>
 
+          <div className="text-right -mt-2">
+            <Link
+              to="/forgot-password"
+              className="text-xs font-semibold text-comar-royal hover:text-comar-navy transition-colors duration-200"
+            >
+              Mot de passe oublie ?
+            </Link>
+          </div>
+
           {error && (
             <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-comar-red text-sm font-medium">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
