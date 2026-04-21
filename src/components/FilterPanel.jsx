@@ -31,6 +31,7 @@ function FilterPanel({ filterStatus, filterType, searchQuery, onFilterStatusChan
             <option value="All">Tous les statuts</option>
             <option value="En cours">En cours</option>
             <option value="En instance">En instance</option>
+            <option value="Annulé">Annulé</option>
             <option value="Clôturé">Clôturé</option>
           </select>
         </div>

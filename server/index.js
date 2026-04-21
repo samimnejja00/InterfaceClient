@@ -28,6 +28,7 @@ app.use(express.json());
 app.use('/api/clients', clientRoutes);
 app.use('/api/dossiers', dossierRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/notifications', notificationRoutes);
 
 // ─── Health check ───────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {

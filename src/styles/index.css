@@ -56,7 +56,9 @@
   }
 
   .status-rejeté,
-  .status-rejete {
+  .status-rejete,
+  .status-annule,
+  .status-annulé {
     @apply bg-red-100 text-red-800;
   }
 

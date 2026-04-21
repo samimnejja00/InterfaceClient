@@ -17,6 +17,19 @@ function RequestTable({ requests }) {
     return new Date(date).toLocaleDateString('fr-FR');
   };
 
+  const formatMontant = (montant) => {
+    if (montant === null || montant === undefined || montant === '') return '-';
+    try {
+      return new Intl.NumberFormat('fr-TN', {
+        style: 'currency',
+        currency: 'TND',
+        minimumFractionDigits: 3,
+      }).format(Number(montant));
+    } catch {
+      return `${montant} TND`;
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
       <div className="overflow-x-auto">
@@ -26,6 +39,7 @@ function RequestTable({ requests }) {
               <th className="text-left px-5 py-3.5 text-xs font-semibold text-comar-gray-text uppercase tracking-wider">N° Demande</th>
               <th className="text-left px-5 py-3.5 text-xs font-semibold text-comar-gray-text uppercase tracking-wider">N° Police</th>
               <th className="text-left px-5 py-3.5 text-xs font-semibold text-comar-gray-text uppercase tracking-wider hidden sm:table-cell">Demande Initiale</th>
+              <th className="text-left px-5 py-3.5 text-xs font-semibold text-comar-gray-text uppercase tracking-wider">Montant</th>
               <th className="text-left px-5 py-3.5 text-xs font-semibold text-comar-gray-text uppercase tracking-wider hidden md:table-cell">Date de Soumission</th>
               <th className="text-left px-5 py-3.5 text-xs font-semibold text-comar-gray-text uppercase tracking-wider">Statut</th>
               <th className="text-left px-5 py-3.5 text-xs font-semibold text-comar-gray-text uppercase tracking-wider">Action</th>
@@ -42,6 +56,9 @@ function RequestTable({ requests }) {
                 </td>
                 <td className="px-5 py-4 text-sm text-comar-gray-text hidden sm:table-cell">
                   {request.demandeInitiale || request.tipoPrestation || request.type || '-'}
+                </td>
+                <td className="px-5 py-4 text-sm text-comar-gray-text font-medium">
+                  {formatMontant(request.montant)}
                 </td>
                 <td className="px-5 py-4 text-sm text-comar-gray-text hidden md:table-cell">
                   {formatDate(request.date || request.created_at)}

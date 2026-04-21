@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useNotifications } from '../context/NotificationsContext';
 
 function Navigation({ clientInfo, onLogout }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { unreadCount } = useNotifications();
 
   const handleLogout = () => {
     onLogout();
@@ -55,6 +57,24 @@ function Navigation({ clientInfo, onLogout }) {
             onClick={() => setMenuOpen(false)}
           >
             Mes Demandes
+          </Link>
+          <Link
+            to="/notifications"
+            className={`w-full md:w-auto text-center px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+              isActive('/notifications')
+                ? 'bg-white/20 text-white'
+                : 'text-white/80 hover:bg-white/10 hover:text-white'
+            }`}
+            onClick={() => setMenuOpen(false)}
+          >
+            <span className="inline-flex items-center gap-2">
+              Notifications
+              {unreadCount > 0 && (
+                <span className="inline-flex min-w-[20px] h-5 items-center justify-center rounded-full bg-comar-red text-white text-[11px] font-bold px-1.5">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </span>
           </Link>
           <Link
             to="/mon-compte"

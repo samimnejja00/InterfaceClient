@@ -19,6 +19,32 @@ function buildRequestNumber(dossierId) {
   return `DEM-${String(dossierId || '').slice(0, 8).toUpperCase()}`;
 }
 
+function normalizeText(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .trim();
+}
+
+function normalizeAction(action) {
+  return normalizeText(action)
+    .replace(/[^A-Z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
+function isHistoryCancellationEvent(historyRow) {
+  const actionCode = normalizeAction(historyRow?.action);
+  const descriptionText = normalizeText(historyRow?.description);
+  const newStatus = normalizeText(historyRow?.new_status);
+
+  if (newStatus === 'ANNULE' || newStatus === 'ANNULEE') return true;
+  if (actionCode.includes('ANNUL')) return true;
+  if (descriptionText.includes('ANNUL')) return true;
+
+  return false;
+}
+
 // Multer setup for memory storage (file buffers)
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -279,12 +305,60 @@ router.get('/', async (req, res) => {
       });
     }
 
+    const dossierRows = dossiers || [];
+    const dossierIds = dossierRows.map((d) => d.id);
+
+    let prestationMap = {};
+    const cancelledByHistory = new Set();
+    if (dossierIds.length > 0) {
+      const [
+        { data: prestationDetails, error: prestationError },
+        { data: historyRows, error: historyError }
+      ] = await Promise.all([
+        supabase
+          .from('dossier_details_prestation')
+          .select('dossier_id, montant')
+          .in('dossier_id', dossierIds),
+        supabase
+          .from('historique_actions')
+          .select('dossier_id, action, description, new_status')
+          .in('dossier_id', dossierIds)
+      ]);
+
+      if (prestationError) {
+        console.warn('Fetch prestation details error:', prestationError.message);
+      } else if (prestationDetails) {
+        prestationDetails.forEach((p) => {
+          prestationMap[p.dossier_id] = p;
+        });
+      }
+
+      if (historyError) {
+        console.warn('Fetch historique actions error:', historyError.message);
+      } else if (historyRows) {
+        historyRows.forEach((historyRow) => {
+          if (isHistoryCancellationEvent(historyRow)) {
+            cancelledByHistory.add(historyRow.dossier_id);
+          }
+        });
+      }
+    }
+
     return res.status(200).json({
       success: true,
-      data: (dossiers || []).map((dossier) => ({
-        ...dossier,
-        request_number: buildRequestNumber(dossier.id),
-      }))
+      data: dossierRows.map((dossier) => {
+        const prestationDetails = prestationMap[dossier.id] || null;
+        const etatCode = normalizeText(dossier.etat);
+        const isCancelled = etatCode === 'ANNULE' || etatCode === 'ANNULEE' || cancelledByHistory.has(dossier.id);
+
+        return {
+          ...dossier,
+          request_number: buildRequestNumber(dossier.id),
+          is_cancelled: isCancelled,
+          dossier_details_prestation: prestationDetails,
+          montant: prestationDetails?.montant ?? null,
+        };
+      })
     });
   } catch (error) {
     console.error('Dossiers error:', error);
@@ -303,7 +377,7 @@ router.get('/:id', async (req, res) => {
       .select(`
         *,
         agences ( id, nom, code ),
-        dossier_details_rc ( date_reception, demande_initiale, motif_instance ) 
+        dossier_details_rc ( date_reception, demande_initiale, motif_instance )
       `)
       .eq('id', req.params.id)
       .eq('client_id', req.client.id)
@@ -314,17 +388,35 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Erreur Supabase: ' + (dossierError ? dossierError.message : 'Not found') + ' details: ' + JSON.stringify(dossierError) });
     }
 
+    const { data: prestationDetails, error: prestationError } = await supabase
+      .from('dossier_details_prestation')
+      .select('dossier_id, montant, document_complet, quittance_signee')
+      .eq('dossier_id', req.params.id)
+      .maybeSingle();
+
+    if (prestationError) {
+      console.warn('Fetch prestation detail by dossier error:', prestationError.message);
+    }
+
     const { data: historique } = await supabase
       .from('historique_actions')
       .select('*')
       .eq('dossier_id', req.params.id)
       .order('created_at', { ascending: true });
 
+    const hasCancellationAction = (historique || []).some((item) => isHistoryCancellationEvent(item));
+
+    const etatCode = normalizeText(dossier.etat);
+    const isCancelled = etatCode === 'ANNULE' || etatCode === 'ANNULEE' || hasCancellationAction;
+
     return res.status(200).json({
       success: true,
       data: {
         ...dossier,
         request_number: buildRequestNumber(dossier.id),
+        is_cancelled: isCancelled,
+        dossier_details_prestation: prestationDetails || null,
+        montant: prestationDetails?.montant ?? null,
       },
       historique: historique || []
     });

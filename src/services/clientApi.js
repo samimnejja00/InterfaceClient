@@ -1,4 +1,16 @@
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const DEFAULT_API_BASE = 'http://localhost:5000/api';
+
+function normalizeApiBase(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return DEFAULT_API_BASE;
+
+  const trimmed = raw.replace(/\/+$/, '');
+  if (/\/api$/i.test(trimmed)) return trimmed;
+
+  return `${trimmed}/api`;
+}
+
+const API_BASE = normalizeApiBase(process.env.REACT_APP_API_URL || DEFAULT_API_BASE);
 
 // ─── Helper: get auth headers ───────────────────────────────────────
 function getAuthHeaders() {
@@ -165,4 +177,52 @@ export async function fetchClientDossierById(id) {
     headers: getAuthHeaders(),
   });
   return handleResponse(res);
+}
+
+export async function fetchClientNotifications({ limit = 50 } = {}) {
+  const safeLimit = Number.isFinite(limit) ? Math.max(1, Math.min(limit, 100)) : 50;
+  const route = `/notifications?limit=${safeLimit}`;
+  const endpoints = [];
+
+  endpoints.push(`${API_BASE}${route}`);
+  endpoints.push(`/api${route}`);
+
+  if (typeof window !== 'undefined') {
+    const host = String(window.location?.hostname || '').toLowerCase();
+    if (host === 'localhost' || host === '127.0.0.1') {
+      endpoints.push(`http://localhost:5000/api${route}`);
+    }
+  }
+
+  const uniqueEndpoints = Array.from(new Set(endpoints));
+  let lastError = null;
+
+  for (const endpoint of uniqueEndpoints) {
+    try {
+      const res = await fetch(endpoint, {
+        headers: getAuthHeaders(),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        return data;
+      }
+
+      const message = data?.message || 'Une erreur est survenue.';
+      const isRouteNotFound = res.status === 404 && String(message).toLowerCase().includes('route non trouv');
+      if (isRouteNotFound) {
+        lastError = new Error(`Route non trouvee (${endpoint})`);
+        continue;
+      }
+
+      throw new Error(message);
+    } catch (error) {
+      lastError = error;
+      if (!String(error?.message || '').toLowerCase().includes('route non trouv')) {
+        throw error;
+      }
+    }
+  }
+
+  throw lastError || new Error('Route non trouvee.');
 }

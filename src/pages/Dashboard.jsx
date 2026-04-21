@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchClientDossiers } from '../services/clientApi';
 import StatusSummary from '../components/StatusSummary';
+import {
+  getClientDisplayStatus,
+  isDossierCancelled,
+  toStatusCssClass,
+} from '../utils/dossierStatus';
 
 // Icônes SVG professionnelles
 const PlusIcon = () => (
@@ -46,24 +51,6 @@ const MailIcon = () => (
   </svg>
 );
 
-// Helper: map DB etat to display status
-function mapEtatToStatus(etat) {
-  switch (etat) {
-    case 'EN_COURS':
-      return 'En cours';
-    case 'EN_INSTANCE':
-    case 'EN_ATTENTE': // legacy
-      return 'En instance';
-    case 'CLOTURE':
-    case 'TRAITE': // legacy
-      return 'Clôturé';
-    case 'REJETE': // legacy
-      return 'Rejeté';
-    default:
-      return etat || 'En cours';
-  }
-}
-
 function formatRequestNumber(dossier) {
   if (dossier?.request_number) return dossier.request_number;
   return `DEM-${String(dossier?.id || '').slice(0, 8).toUpperCase()}`;
@@ -74,6 +61,7 @@ function Dashboard({ clientInfo }) {
     enInstance: 0,
     enCours: 0,
     cloture: 0,
+    annule: 0,
     rejete: 0
   });
   const [recentDossiers, setRecentDossiers] = useState([]);
@@ -87,8 +75,13 @@ function Dashboard({ clientInfo }) {
         const dossiers = result.data || [];
 
         // Compute stats from real data
-        const stats = { enInstance: 0, enCours: 0, cloture: 0, rejete: 0 };
+        const stats = { enInstance: 0, enCours: 0, cloture: 0, annule: 0, rejete: 0 };
         dossiers.forEach((d) => {
+          if (isDossierCancelled(d)) {
+            stats.annule++;
+            return;
+          }
+
           switch (d.etat) {
             case 'EN_INSTANCE':
             case 'EN_ATTENTE':
@@ -123,6 +116,25 @@ function Dashboard({ clientInfo }) {
   const formatDate = (date) => {
     if (!date) return '-';
     return new Date(date).toLocaleDateString('fr-FR');
+  };
+
+  const formatMontant = (dossier) => {
+    const detailsPrestation = Array.isArray(dossier?.dossier_details_prestation)
+      ? dossier.dossier_details_prestation[0]
+      : dossier?.dossier_details_prestation;
+
+    const montant = dossier?.montant ?? detailsPrestation?.montant;
+    if (montant === null || montant === undefined || montant === '') return '-';
+
+    try {
+      return new Intl.NumberFormat('fr-TN', {
+        style: 'currency',
+        currency: 'TND',
+        minimumFractionDigits: 3,
+      }).format(Number(montant));
+    } catch {
+      return `${montant} TND`;
+    }
   };
 
   return (
@@ -199,26 +211,34 @@ function Dashboard({ clientInfo }) {
                       <th className="text-left px-5 py-3.5 text-xs font-semibold text-comar-gray-text uppercase tracking-wider">N° Demande</th>
                       <th className="text-left px-5 py-3.5 text-xs font-semibold text-comar-gray-text uppercase tracking-wider">Souscripteur</th>
                       <th className="text-left px-5 py-3.5 text-xs font-semibold text-comar-gray-text uppercase tracking-wider">N° Police</th>
+                      <th className="text-left px-5 py-3.5 text-xs font-semibold text-comar-gray-text uppercase tracking-wider">Montant</th>
                       <th className="text-left px-5 py-3.5 text-xs font-semibold text-comar-gray-text uppercase tracking-wider hidden sm:table-cell">Agence</th>
                       <th className="text-left px-5 py-3.5 text-xs font-semibold text-comar-gray-text uppercase tracking-wider hidden md:table-cell">Date</th>
                       <th className="text-left px-5 py-3.5 text-xs font-semibold text-comar-gray-text uppercase tracking-wider">État</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
-                    {recentDossiers.map((dossier) => (
-                      <tr key={dossier.id} className="hover:bg-comar-gray-bg/30 transition-colors duration-150">
-                        <td className="px-5 py-4 text-sm font-mono text-comar-gray-text">{formatRequestNumber(dossier)}</td>
-                        <td className="px-5 py-4 text-sm text-comar-navy font-medium">{dossier.souscripteur}</td>
-                        <td className="px-5 py-4 text-sm text-comar-gray-text">{dossier.police_number}</td>
-                        <td className="px-5 py-4 text-sm text-comar-gray-text hidden sm:table-cell">{dossier.agences?.nom || '-'}</td>
-                        <td className="px-5 py-4 text-sm text-comar-gray-text hidden md:table-cell">{formatDate(dossier.created_at)}</td>
-                        <td className="px-5 py-4">
-                          <span className={`status-badge status-${dossier.etat?.toLowerCase()?.replace('_', '-')}`}>
-                            {mapEtatToStatus(dossier.etat)}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                    {recentDossiers.map((dossier) => {
+                      const isCancelled = isDossierCancelled(dossier);
+                      const displayStatus = getClientDisplayStatus(dossier.etat, { isCancelled });
+                      const badgeClass = toStatusCssClass(displayStatus);
+
+                      return (
+                        <tr key={dossier.id} className="hover:bg-comar-gray-bg/30 transition-colors duration-150">
+                          <td className="px-5 py-4 text-sm font-mono text-comar-gray-text">{formatRequestNumber(dossier)}</td>
+                          <td className="px-5 py-4 text-sm text-comar-navy font-medium">{dossier.souscripteur}</td>
+                          <td className="px-5 py-4 text-sm text-comar-gray-text">{dossier.police_number}</td>
+                          <td className="px-5 py-4 text-sm text-comar-gray-text font-medium">{formatMontant(dossier)}</td>
+                          <td className="px-5 py-4 text-sm text-comar-gray-text hidden sm:table-cell">{dossier.agences?.nom || '-'}</td>
+                          <td className="px-5 py-4 text-sm text-comar-gray-text hidden md:table-cell">{formatDate(dossier.created_at)}</td>
+                          <td className="px-5 py-4">
+                            <span className={`status-badge ${badgeClass}`}>
+                              {displayStatus}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

@@ -3,23 +3,7 @@ import { Link } from 'react-router-dom';
 import RequestTable from '../components/RequestTable';
 import FilterPanel from '../components/FilterPanel';
 import { fetchClientDossiers } from '../services/clientApi';
-
-function mapEtatToStatus(etat) {
-  switch (etat) {
-    case 'EN_COURS':
-      return 'En cours';
-    case 'EN_INSTANCE':
-    case 'EN_ATTENTE': // legacy
-      return 'En instance';
-    case 'CLOTURE':
-    case 'TRAITE': // legacy
-      return 'Clôturé';
-    case 'REJETE': // legacy
-      return 'Rejeté';
-    default:
-      return etat || 'En cours';
-  }
-}
+import { getClientDisplayStatus, isDossierCancelled } from '../utils/dossierStatus';
 
 function formatRequestNumber(dossier) {
   if (dossier?.request_number) return dossier.request_number;
@@ -44,6 +28,9 @@ function MyRequests({ clientInfo }) {
         
         const mappedData = res.data.map(dossier => {
           const details = Array.isArray(dossier.dossier_details_rc) ? dossier.dossier_details_rc[0] : dossier.dossier_details_rc;
+          const prestationDetails = Array.isArray(dossier.dossier_details_prestation)
+            ? dossier.dossier_details_prestation[0]
+            : dossier.dossier_details_prestation;
           let demandeInitiale = details?.demande_initiale || dossier.demande_initiale || 'Non précisée';
           if (demandeInitiale.startsWith('[')) {
             const parts = demandeInitiale.split(']');
@@ -54,9 +41,11 @@ function MyRequests({ clientInfo }) {
             id: dossier.id,
             requestNumber: formatRequestNumber(dossier),
             demandeInitiale,
-            montant: 0,
+            montant: dossier?.montant ?? prestationDetails?.montant ?? null,
             created_at: dossier.created_at,
-            status: mapEtatToStatus(dossier.etat),
+            status: getClientDisplayStatus(dossier.etat, {
+              isCancelled: isDossierCancelled(dossier),
+            }),
             motifInstance: details?.motif_instance || '',
             police_number: dossier.police_number
           };
@@ -90,6 +79,7 @@ function MyRequests({ clientInfo }) {
         String(req.requestNumber || '').toLowerCase().includes(q) ||
         (req.demandeInitiale && req.demandeInitiale.toLowerCase().includes(q)) ||
         (req.motifInstance && req.motifInstance.toLowerCase().includes(q)) ||
+        (req.montant !== null && req.montant !== undefined && String(req.montant).toLowerCase().includes(q)) ||
         (req.police_number && req.police_number.toLowerCase().includes(q))
       );
     }
