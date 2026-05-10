@@ -84,6 +84,8 @@ function loadState(stateFilePath, logger = console) {
       const initialState = {
         lastProcessedAt: new Date().toISOString(),
         processedActionIds: [],
+        lastProcessedNotifAt: new Date().toISOString(),
+        processedNotifIds: [],
       };
       ensureStateDir(stateFilePath);
       fs.writeFileSync(stateFilePath, JSON.stringify(initialState, null, 2), 'utf8');
@@ -96,12 +98,16 @@ function loadState(stateFilePath, logger = console) {
     return {
       lastProcessedAt: parsed?.lastProcessedAt || new Date().toISOString(),
       processedActionIds: Array.isArray(parsed?.processedActionIds) ? parsed.processedActionIds : [],
+      lastProcessedNotifAt: parsed?.lastProcessedNotifAt || new Date().toISOString(),
+      processedNotifIds: Array.isArray(parsed?.processedNotifIds) ? parsed.processedNotifIds : [],
     };
   } catch (error) {
     logger.error('[EmailNotifier] Erreur de lecture etat:', error.message);
     return {
       lastProcessedAt: new Date().toISOString(),
       processedActionIds: [],
+      lastProcessedNotifAt: new Date().toISOString(),
+      processedNotifIds: [],
     };
   }
 }

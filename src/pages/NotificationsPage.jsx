@@ -122,7 +122,7 @@ function NotificationsPage() {
             <button
               onClick={markAllAsRead}
               disabled={!notifications.length || unreadCount === 0}
-              className="px-4 py-2 rounded-lg text-sm font-semibold bg-comar-royal text-white hover:bg-blue-700 disabled:opacity-60"
+              className="px-4 py-2 rounded-lg text-sm font-semibold bg-comar-royal text-white hover:bg-comar-green-dark disabled:opacity-60"
             >
               Marquer tout lu
             </button>

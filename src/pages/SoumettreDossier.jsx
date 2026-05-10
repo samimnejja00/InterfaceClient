@@ -42,7 +42,7 @@ function SoumettreDossier() {
     motif_instance: '',
     telephone: '+216 ',
   });
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [successDossier, setSuccessDossier] = useState(null);
@@ -77,19 +77,30 @@ function SoumettreDossier() {
   };
 
   const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      // Validate file size and type if needed
-      if (selectedFile.size > 5 * 1024 * 1024) {
-        setError('Le fichier ne doit pas dépasser 5 Mo.');
+    const selectedFiles = Array.from(e.target.files);
+    if (selectedFiles.length > 0) {
+      // Limit to 5 files total for example
+      if (files.length + selectedFiles.length > 5) {
+        setError('Vous ne pouvez pas joindre plus de 5 fichiers.');
         e.target.value = '';
         return;
       }
-      setFile(selectedFile);
+
+      const invalidFile = selectedFiles.find(f => f.size > 5 * 1024 * 1024);
+      if (invalidFile) {
+        setError(`Le fichier "${invalidFile.name}" dépasse la limite de 5 Mo.`);
+        e.target.value = '';
+        return;
+      }
+
+      setFiles(prev => [...prev, ...selectedFiles]);
       setError('');
-    } else {
-      setFile(null);
+      e.target.value = ''; // Reset input to allow re-selecting the same file if removed
     }
+  };
+
+  const removeFile = (index) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
@@ -121,9 +132,9 @@ function SoumettreDossier() {
         dataToSubmit.append(key, formData[key]);
       });
       
-      if (file) {
-        dataToSubmit.append('piece_justificative', file);
-      }
+      files.forEach(f => {
+        dataToSubmit.append('piece_justificative', f);
+      });
 
       const result = await submitDossier(dataToSubmit);
       setSuccessDossier(result.dossier);
@@ -178,7 +189,7 @@ function SoumettreDossier() {
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <button 
-              className="flex-1 py-3 bg-comar-royal text-white font-semibold rounded-xl shadow-md hover:bg-blue-700 transition-all duration-200"
+              className="flex-1 py-3 bg-comar-royal text-white font-semibold rounded-xl shadow-md hover:bg-comar-green-dark transition-all duration-200"
               onClick={() => navigate('/home')}
             >
               Retour au tableau de bord
@@ -193,7 +204,7 @@ function SoumettreDossier() {
                   motif_instance: '',
                   telephone: '+216 ',
                 });
-                setFile(null);
+                setFiles([]);
               }}
             >
               Soumettre un autre dossier
@@ -355,7 +366,7 @@ function SoumettreDossier() {
 
               <div>
                 <label htmlFor="piece_justificative" className="block text-sm font-medium text-comar-navy mb-1.5">
-                  Pièce justificative (PDF, PNG, JPG) (Optionnel)
+                  Pièces justificatives (PDF, PNG, JPG) (Optionnel)
                 </label>
                 <div className="relative">
                   <input
@@ -363,12 +374,42 @@ function SoumettreDossier() {
                     id="piece_justificative"
                     name="piece_justificative"
                     accept=".pdf, .png, .jpg, .jpeg"
+                    multiple
                     onChange={handleFileChange}
                     disabled={loading}
                     className="w-full px-4 py-3 rounded-xl border border-dashed border-gray-300 bg-comar-gray-bg text-sm text-comar-gray-text file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-comar-royal/10 file:text-comar-royal hover:file:bg-comar-royal/20 transition-all duration-200 cursor-pointer disabled:opacity-50"
                   />
                 </div>
-                <p className="mt-1.5 text-xs text-comar-gray-text">Taille maximale : 5 Mo.</p>
+                <p className="mt-1.5 text-xs text-comar-gray-text">Taille maximale par fichier : 5 Mo. Maximum 5 fichiers.</p>
+                
+                {/* File list */}
+                {files.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    {files.map((f, index) => (
+                      <div key={index} className="flex items-center justify-between p-2.5 bg-comar-gray-bg rounded-lg border border-gray-100 animate-fade-in">
+                        <div className="flex items-center gap-2 overflow-hidden">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-comar-royal">
+                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                          </svg>
+                          <span className="text-xs font-medium text-comar-navy truncate">{f.name}</span>
+                          <span className="text-[10px] text-comar-gray-text shrink-0">({(f.size / 1024 / 1024).toFixed(2)} Mo)</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeFile(index)}
+                          className="p-1 text-comar-red hover:bg-red-50 rounded transition-colors"
+                          title="Supprimer"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -384,7 +425,7 @@ function SoumettreDossier() {
               </button>
               <button
                 type="submit"
-                className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 bg-comar-royal text-white text-sm font-semibold rounded-xl shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 bg-comar-royal text-white text-sm font-semibold rounded-xl shadow-md hover:bg-comar-green-dark hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={loading}
               >
                 {loading ? (

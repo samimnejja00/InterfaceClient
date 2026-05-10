@@ -99,24 +99,31 @@ router.get('/agences', async (req, res) => {
     console.error('Agences error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Erreur interne du serveur.'
+      message: `Erreur interne du serveur: ${error.message}`
     });
   }
 });
 
 // ─── POST /api/dossiers — Soumission d'un dossier ──────────────────
-router.post('/', upload.single('piece_justificative'), dossierValidation, async (req, res) => {
+router.post('/', upload.array('piece_justificative', 5), dossierValidation, async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const messages = errors.array().map(e => e.msg);
     return res.status(400).json({ success: false, message: messages[0], errors: messages });
   }
 
-  const { agence_id, demande_initiale, motif_instance, telephone } = req.body;
-  const client_id = req.client.id;
-  const normalizedDemandeInitiale = demande_initiale === 'Rachat Echu' ? 'Rachat Échu' : demande_initiale;
-
   try {
+    if (!req.client || !req.client.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'Session client invalide. Veuillez vous reconnecter.'
+      });
+    }
+
+    const { agence_id, demande_initiale, motif_instance, telephone } = req.body;
+    const client_id = req.client.id;
+    const normalizedDemandeInitiale = demande_initiale === 'Rachat Echu' ? 'Rachat Échu' : demande_initiale;
+
     // Resolve client identity and contract number from account.
     const { data: clientProfile, error: clientError } = await supabase
       .from('clients')
@@ -170,37 +177,46 @@ router.post('/', upload.single('piece_justificative'), dossierValidation, async 
       });
     }
 
-    let piece_justificative_url = null;
+    let piece_justificative_urls = [];
 
-    // Upload file to Supabase if present
-    if (req.file) {
-      const fileExt = req.file.originalname.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `${client_id}/${fileName}`;
-      
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('pieces_justificatives')
-        .upload(filePath, req.file.buffer, {
-          contentType: req.file.mimetype,
-          cacheControl: '3600',
-          upsert: false
-        });
+    // Upload files to Supabase if present
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        const fileExt = file.originalname.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `${client_id}/${fileName}`;
 
-      if (uploadError) {
-        console.error('File upload error:', uploadError);
-        return res.status(500).json({
-          success: false,
-          message: 'Erreur lors de l\'upload de la pièce justificative. Veuillez réessayer.'
-        });
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('pieces_justificatives')
+          .upload(filePath, file.buffer, {
+            contentType: file.mimetype,
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError) {
+          console.error('File upload error:', uploadError);
+          // On continue pour les autres fichiers ou on stoppe ? 
+          // Ici on stoppe pour être sûr de la cohérence.
+          return res.status(500).json({
+            success: false,
+            message: 'Erreur lors de l\'upload d\'une pièce justificative.'
+          });
+        }
+
+        const { data: publicURLData } = supabase.storage
+          .from('pieces_justificatives')
+          .getPublicUrl(filePath);
+
+        piece_justificative_urls.push(publicURLData.publicUrl);
       }
-
-      // Get public URL (assuming the bucket is public, or we can just store the path)
-      const { data: publicURLData } = supabase.storage
-        .from('pieces_justificatives')
-        .getPublicUrl(filePath);
-
-      piece_justificative_url = publicURLData.publicUrl;
     }
+
+    // Convert array to string for DB storage (or keep as is if column is JSONB)
+    // Here we stringify it to be safe.
+    const pieceJustificativeValue = piece_justificative_urls.length > 0 
+      ? JSON.stringify(piece_justificative_urls) 
+      : null;
 
     // Step 1: Create dossier
     const { data: dossier, error: dossierError } = await supabase
@@ -213,8 +229,7 @@ router.post('/', upload.single('piece_justificative'), dossierValidation, async 
         niveau: 'RELATION_CLIENT',
         etat: 'EN_COURS',
         is_urgent: false,
-        created_by: null, // Client, not an internal agent
-        piece_justificative_url // On l'ajoute ici
+        piece_justificative_url: pieceJustificativeValue
       })
       .select('id, souscripteur, police_number, niveau, etat, is_urgent, created_at')
       .single();
@@ -227,16 +242,22 @@ router.post('/', upload.single('piece_justificative'), dossierValidation, async 
       });
     }
 
-    // Step 2: Create dossier_details_rc using the same structure as internal platform
+    if (dossier) {
+      console.log(`[Backend] Dossier créé avec ID: ${dossier.id}`);
+    }
+
+    // Step 2: Create dossier_details_rc
+    // date_reception is NOT NULL in DB, so we use '1970-01-01' as a sentinel
+    // to mark "pending validation". The RC agent will set the real date upon validation.
     const { error: detailsError } = await supabase
       .from('dossier_details_rc')
-      .insert({
+      .insert([{
         dossier_id: dossier.id,
-        date_reception: new Date().toISOString().split('T')[0], // TODAY
+        date_reception: '1970-01-01',
         telephone: telephone || null,
         demande_initiale: normalizedDemandeInitiale,
-        motif_instance,
-      });
+        motif_instance: motif_instance,
+      }]);
 
     if (detailsError) {
       console.error('Dossier details insert error:', detailsError);
@@ -279,7 +300,7 @@ router.post('/', upload.single('piece_justificative'), dossierValidation, async 
     console.error('Create dossier error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Erreur interne du serveur. Veuillez réessayer.'
+      message: `Erreur interne du serveur (POST): ${error.message}`
     });
   }
 });
@@ -301,7 +322,7 @@ router.get('/', async (req, res) => {
       console.error('Fetch dossiers error:', error);
       return res.status(500).json({
         success: false,
-        message: 'Erreur lors du chargement de vos dossiers.'
+        message: `Erreur lors du chargement de vos dossiers: ${error.message}`
       });
     }
 
@@ -362,10 +383,10 @@ router.get('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Dossiers error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Erreur interne du serveur.'
-    });
+      return res.status(500).json({
+        success: false,
+        message: `Erreur interne du serveur (GET List): ${error.message}`
+      });
   }
 });
 
@@ -387,6 +408,13 @@ router.get('/:id', async (req, res) => {
       console.error('Dossier fetch error:', dossierError);
       return res.status(404).json({ success: false, message: 'Erreur Supabase: ' + (dossierError ? dossierError.message : 'Not found') + ' details: ' + JSON.stringify(dossierError) });
     }
+
+    const numericId = parseInt(req.params.id);
+    const { data: rcData } = await supabase
+      .from('dossier_details_rc')
+      .select('telephone, demande_initiale, motif_instance, date_reception')
+      .eq('dossier_id', isNaN(numericId) ? req.params.id : numericId)
+      .maybeSingle();
 
     const { data: prestationDetails, error: prestationError } = await supabase
       .from('dossier_details_prestation')
@@ -422,7 +450,7 @@ router.get('/:id', async (req, res) => {
     });
   } catch (error) {
     console.error('Fetch dossier error general:', error);
-    return res.status(500).json({ success: false, message: 'Erreur interne du serveur.' });
+    return res.status(500).json({ success: false, message: `Erreur interne du serveur (GET Detail): ${error.message}` });
   }
 });
 

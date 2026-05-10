@@ -7,9 +7,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'comar-navy': '#1B2A6B',
-        'comar-royal': '#1E4FD8',
+        'comar-navy': '#1A3B5C',
+        'comar-royal': '#00A651',
         'comar-red': '#D42B2B',
+        'comar-green': '#00A651',
+        'comar-green-light': '#33B872',
+        'comar-green-dark': '#008C44',
         'comar-gray-bg': '#F4F6FA',
         'comar-gray-text': '#4A5568',
         'comar-border': '#E2E8F0',

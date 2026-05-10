@@ -67,10 +67,10 @@ function SignUpPage() {
         <div className="login-card">
           <div className="login-header">
             <div className="login-logo">
-              <img src="/logo-comar.png" alt="COMAR Assurances" />
+            <img src="/LogoHayett.png" alt="Hayett Assurances" style={{ borderRadius: '0.75rem' }} />
             </div>
             <h1>Compte créé !</h1>
-            <p className="subtitle">Votre compte client COMAR a été créé. Vous allez être redirigé...</p>
+            <p className="subtitle">Votre compte client Hayett a été créé. Vous allez être redirigé...</p>
           </div>
           <div className="success-message" style={{ textAlign: 'center', padding: '2rem' }}>
             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -88,10 +88,10 @@ function SignUpPage() {
       <div className="login-card">
         <div className="login-header">
           <div className="login-logo">
-            <img src="/logo-comar.png" alt="COMAR Assurances" />
+            <img src="/LogoHayett.png" alt="Hayett Assurances" style={{ borderRadius: '0.75rem' }} />
           </div>
           <h1>Créer votre compte</h1>
-          <p className="subtitle">Accédez à votre espace client COMAR Assurances</p>
+          <p className="subtitle">Accédez à votre espace client Hayett Assurances</p>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -191,14 +191,14 @@ function SignUpPage() {
         </form>
 
         <div className="signup-link" style={{ marginTop: '1.5rem', textAlign: 'center', padding: '1rem', background: '#f8fafc', borderRadius: '0.5rem' }}>
-          <span style={{ color: '#475569', fontSize: '0.875rem' }}>Déjà un compte client COMAR ? </span>
+          <span style={{ color: '#475569', fontSize: '0.875rem' }}>Déjà un compte client Hayett ? </span>
           <Link to="/login" style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none', fontSize: '0.875rem' }}>
             Se connecter
           </Link>
         </div>
 
         <div className="login-footer" style={{ marginTop: '2rem' }}>
-          <p>© 2026 COMAR Assurances — PrestaTrack</p>
+          <p>© 2026 Hayett Assurances — PrestaTrack</p>
         </div>
       </div>
     </div>

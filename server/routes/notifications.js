@@ -144,7 +144,40 @@ router.get('/', async (req, res) => {
       safeDossiers.map((dossier) => [dossier.id, dossier])
     );
 
-    const notifications = (actions || []).map((actionRow) => {
+    const filteredActions = (actions || []).filter((actionRow) => {
+      const code = normalizeAction(actionRow.action);
+      const oldStatus = actionRow.old_status;
+      const newStatus = actionRow.new_status;
+
+      // 1. Advancement: status changed
+      const statusChanged = oldStatus && newStatus && oldStatus !== newStatus;
+
+      // 2. Initial submission
+      const isInitial = code === 'DOSSIER_SOUMIS_PAR_LE_CLIENT' || code === 'CREATION_DU_DOSSIER';
+
+      // 3. Significant workflow milestones
+      const isMilestone = [
+        'VALIDATION_CONFORMITE',
+        'ENVOI_PRESTATION',
+        'TRANSMISSION_A_PRESTATION',
+        'QUITTANCE_TRANSFEREE',
+        'PAIEMENT_CONFIRME'
+      ].includes(code);
+
+      // 4. Refusal or Cancellation
+      const isRefusal = [
+        'ANNULATION_DOSSIER',
+        'DOSSIER_ANNULE',
+        'REJETE'
+      ].includes(code) || newStatus === 'REJETE' || newStatus === 'ANNULE';
+
+      // 5. Cloture
+      const isCloture = newStatus === 'CLOTURE' || newStatus === 'TRAITE';
+
+      return statusChanged || isInitial || isMilestone || isRefusal || isCloture;
+    });
+
+    const notifications = filteredActions.map((actionRow) => {
       const dossier = dossierById.get(actionRow.dossier_id) || {};
       const agence = normalizeRelation(dossier.agences);
 

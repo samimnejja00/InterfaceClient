@@ -43,7 +43,10 @@ app.use((req, res) => {
 // ─── Error handler ──────────────────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
-  res.status(500).json({ success: false, message: 'Erreur interne du serveur.' });
+  res.status(500).json({ 
+    success: false, 
+    message: `Erreur interne du serveur: ${err.message || 'Inconnue'}` 
+  });
 });
 
 // ─── Start server ───────────────────────────────────────────────────

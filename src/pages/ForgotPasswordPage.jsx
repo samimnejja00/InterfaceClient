@@ -42,7 +42,7 @@ function ForgotPasswordPage() {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 sm:p-10 animate-fade-in">
         <div className="text-center mb-8">
           <div className="mb-4 flex justify-center">
-            <img src="/logo-comar.png" alt="COMAR Assurances" className="h-16 w-auto rounded-xl" />
+            <img src="/LogoHayett.png" alt="Hayett Assurances" className="h-16 w-auto rounded-xl" />
           </div>
           <h1 className="text-2xl font-bold text-comar-navy">Mot de passe oublie</h1>
           <p className="text-sm text-comar-gray-text mt-1">
@@ -80,7 +80,7 @@ function ForgotPasswordPage() {
 
           <button
             type="submit"
-            className="w-full py-3.5 bg-comar-royal text-white font-semibold rounded-xl shadow-md hover:bg-blue-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-comar-royal/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3.5 bg-comar-green text-white font-semibold rounded-xl shadow-md hover:bg-comar-green-dark hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-comar-green/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={loading}
           >
             {loading ? 'Envoi en cours...' : 'Recevoir le lien par email'}

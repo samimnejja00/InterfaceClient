@@ -100,8 +100,8 @@ function WelcomePage() {
         <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
           <div className="mb-8 flex justify-center">
             <img 
-              src="/logo-comar.png" 
-              alt="COMAR Assurances" 
+              src="/LogoHayett.png" 
+              alt="Hayett Assurances" 
               className="h-20 sm:h-24 w-auto drop-shadow-lg rounded-2xl"
             />
           </div>
@@ -115,7 +115,7 @@ function WelcomePage() {
             {isAuthenticated ? (
               <>
                 <button 
-                  className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-comar-royal text-white font-semibold rounded-xl shadow-lg hover:bg-blue-700 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+                  className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-comar-green text-white font-semibold rounded-xl shadow-lg hover:bg-comar-green-dark hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
                   onClick={() => navigate('/soumettre-dossier')}
                 >
                   Soumettre une demande de prestation
@@ -132,7 +132,7 @@ function WelcomePage() {
             ) : (
               <>
                 <button 
-                  className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-comar-royal text-white font-semibold rounded-xl shadow-lg hover:bg-blue-700 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+                  className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-comar-green text-white font-semibold rounded-xl shadow-lg hover:bg-comar-green-dark hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
                   onClick={() => navigate('/login')}
                 >
                   Se connecter
@@ -189,10 +189,10 @@ function WelcomePage() {
       <div className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-comar-navy mb-6">
-            À propos de COMAR Assurances
+            À propos de Hayett Assurances
           </h2>
           <p className="text-base sm:text-lg text-comar-gray-text leading-relaxed mb-10">
-            COMAR Assurances est votre partenaire de confiance pour la protection 
+            Hayett Assurances est votre partenaire de confiance pour la protection 
             de vos biens et de votre famille. Avec PrestaTrack, nous vous offrons 
             un accès simplifié à vos prestations, pour une expérience client moderne 
             et efficace.
@@ -212,7 +212,7 @@ function WelcomePage() {
 
       {/* Footer */}
       <div className="bg-comar-navy py-8 text-center">
-        <p className="text-white/60 text-sm">© 2026 COMAR Assurances — PrestaTrack. Tous droits réservés.</p>
+        <p className="text-white/60 text-sm">© 2026 Hayett Assurances — PrestaTrack. Tous droits réservés.</p>
       </div>
     </div>
   );

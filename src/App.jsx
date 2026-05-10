@@ -16,6 +16,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import SoumettreDossier from './pages/SoumettreDossier';
 import Navigation from './components/Navigation';
 import Chatbot from './components/Chatbot';
+import PublicChatbot from './components/PublicChatbot';
 import { NotificationsProvider } from './context/NotificationsContext';
 
 // Protected route component
@@ -109,7 +110,7 @@ function AppContent() {
           {/* Redirect old signup to register */}
           <Route path="/signup" element={<Navigate to="/register" replace />} />
         </Routes>
-        {isAuthenticated && <Chatbot />}
+        {isAuthenticated ? <Chatbot /> : <PublicChatbot />}
       </NotificationsProvider>
     </Router>
   );

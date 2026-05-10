@@ -20,7 +20,7 @@ function Navigation({ clientInfo, onLogout }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 shrink-0">
-          <img src="/logo-comar.png" alt="COMAR Assurances" className="h-9 w-auto drop-shadow-md rounded-xl" />
+          <img src="/LogoHayett.png" alt="Hayett Assurances" className="h-9 w-auto drop-shadow-md rounded-lg" />
         </Link>
 
         {/* Menu Toggle Button (mobile) */}

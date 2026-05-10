@@ -157,7 +157,7 @@ function Dashboard({ clientInfo }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Link 
               to="/soumettre-dossier" 
-              className="flex items-center gap-4 p-5 bg-comar-royal text-white rounded-xl shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-200 group"
+              className="flex items-center gap-4 p-5 bg-comar-royal text-white rounded-xl shadow-md hover:bg-comar-green-dark hover:shadow-lg transition-all duration-200 group"
             >
               <span className="w-12 h-12 flex items-center justify-center rounded-xl bg-white/20 group-hover:bg-white/30 transition-colors duration-200">
                 <PlusIcon />

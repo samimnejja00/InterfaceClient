@@ -110,7 +110,7 @@ function MyRequests({ clientInfo }) {
           </p>
           <Link
             to="/soumettre-dossier"
-            className="inline-flex items-center px-5 py-2.5 bg-comar-royal text-white text-sm font-semibold rounded-xl shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-200"
+            className="inline-flex items-center px-5 py-2.5 bg-comar-royal text-white text-sm font-semibold rounded-xl shadow-md hover:bg-comar-green-dark hover:shadow-lg transition-all duration-200"
           >
             + Nouvelle Demande
           </Link>

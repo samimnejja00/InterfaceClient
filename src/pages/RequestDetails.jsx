@@ -212,62 +212,80 @@ function RequestDetails() {
 
   /* ─── Build Timeline ─── */
   const buildTrackingTimeline = () => {
-    const serviceSteps = [
-      { id: 'RELATION_CLIENT', title: 'Service Relation Client', desc: 'Réception et constitution du dossier' },
-      { id: 'PRESTATION', title: 'Service Prestation', desc: 'Analyse métier et calcul' },
-      { id: 'FINANCE', title: 'Service Finance', desc: 'Validation financière' },
+    const details = Array.isArray(dossier.dossier_details_rc)
+      ? dossier.dossier_details_rc[0]
+      : dossier.dossier_details_rc;
+    const dateReception = details?.date_reception;
+    const isValidated = dateReception && dateReception !== '1970-01-01';
+    const niveau = dossier.niveau;
+    const normalizedEtat = dossier.etat === 'TRAITE' ? 'CLOTURE' : dossier.etat;
+    const isFinished = normalizedEtat === 'CLOTURE' || normalizedEtat === 'REJETE';
+    const isInPrestation = niveau === 'PRESTATION';
+    const isInFinance = niveau === 'FINANCE';
+    const isInTraitement = isInPrestation || isInFinance;
+
+    const newSteps = [
+      { id: 'VALIDATION', title: 'Validation de la demande', desc: 'Vérification de la conformité de votre dossier par le service Relation Client' },
+      { id: 'GESTION', title: 'Gestion du dossier', desc: 'Constitution et préparation de votre dossier par le service Relation Client' },
+      { id: 'TRAITEMENT', title: 'Traitement du dossier', desc: 'Analyse et traitement par les services Prestation et Finance' },
+      { id: 'CLOTURE', title: 'Clôture et Paiement', desc: 'Règlement effectué et dossier clôturé' },
     ];
 
+    // ── Cancelled dossier ──
     const cancellationEvents = historique.filter((h) => isCancellationAction(h?.action));
     const lastCancellationEvent = cancellationEvents[cancellationEvents.length - 1] || null;
 
     if (isCancelledDossier) {
+      // Find where it stopped
+      let cancelStepId = 'VALIDATION';
+      if (isValidated) cancelStepId = 'GESTION';
+      if (isInTraitement) cancelStepId = 'TRAITEMENT';
+      if (normalizedEtat === 'CLOTURE') cancelStepId = 'CLOTURE';
+
+      const cancelIndex = newSteps.findIndex(s => s.id === cancelStepId);
+
       const steps = [
-        ...serviceSteps,
-        {
-          id: 'ANNULE',
-          title: 'Annulation du dossier',
-          desc: 'Le traitement a été arrêté. Veuillez contacter votre agence pour plus de détails.',
-        },
+        ...newSteps,
+        { id: 'ANNULE', title: 'Annulation du dossier', desc: 'Le traitement a été arrêté. Veuillez contacter votre agence pour plus de détails.' },
       ];
 
-      let currentNiveauIndex = serviceSteps.findIndex((s) => s.id === dossier.niveau);
-      if (currentNiveauIndex === -1) currentNiveauIndex = serviceSteps.length - 1;
-
-      return steps.map((step, index) => {
+      return steps.map((step) => {
         let stepStatus = 'pending';
         let dateText = 'À venir';
         let timeText = '';
 
         if (step.id === 'ANNULE') {
           stepStatus = 'cancelled';
-        } else if (index <= currentNiveauIndex) {
-          stepStatus = 'completed';
-        }
-
-        const eventHistoList = historique.filter((h) => {
-          if (step.id === 'ANNULE') {
-            return isCancellationAction(h?.action);
+          if (lastCancellationEvent?.created_at) {
+            const d = new Date(lastCancellationEvent.created_at);
+            dateText = d.toLocaleDateString('fr-FR');
+            timeText = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+          }
+        } else {
+          const currentIndex = newSteps.findIndex(s => s.id === step.id);
+          
+          if (currentIndex < cancelIndex) {
+            stepStatus = 'completed';
+          } else if (currentIndex === cancelIndex) {
+            stepStatus = 'cancelled';
+          } else {
+            stepStatus = 'pending';
           }
 
-          return (
-            h.new_status === step.id ||
-            (index === 0 && /soumis|création du dossier|creation du dossier/i.test(h.action || ''))
-          );
-        });
+          // Try to find a date for this step
+          const eventHistoList = historique.filter((h) => {
+             return h.new_status === step.id || (currentIndex === 0 && /soumis/i.test(h.action || ''));
+          });
 
-        if (eventHistoList.length > 0) {
-          const lastEvent = eventHistoList[eventHistoList.length - 1];
-          const dateObj = new Date(lastEvent.created_at);
-          dateText = dateObj.toLocaleDateString('fr-FR');
-          timeText = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-        } else if (step.id === 'ANNULE' && lastCancellationEvent?.created_at) {
-          const dateObj = new Date(lastCancellationEvent.created_at);
-          dateText = dateObj.toLocaleDateString('fr-FR');
-          timeText = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-        } else if (stepStatus === 'completed') {
-          const dateObj = new Date(dossier.updated_at || dossier.created_at);
-          dateText = dateObj.toLocaleDateString('fr-FR');
+          if (eventHistoList.length > 0) {
+            const lastEvent = eventHistoList[eventHistoList.length - 1];
+            const d = new Date(lastEvent.created_at);
+            dateText = d.toLocaleDateString('fr-FR');
+            timeText = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+          } else if (stepStatus === 'completed' || stepStatus === 'cancelled') {
+            const d = new Date(dossier.created_at);
+            dateText = d.toLocaleDateString('fr-FR');
+          }
         }
 
         return {
@@ -283,45 +301,99 @@ function RequestDetails() {
       });
     }
 
-    const steps = [
-      ...serviceSteps,
-      { id: 'CLOTURE', title: 'Clôture et Paiement', desc: 'Règlement effectué' }
-    ];
-
-    let currentNiveauIndex = steps.findIndex(s => s.id === dossier.niveau);
-    if (currentNiveauIndex === -1) currentNiveauIndex = 0;
-    const normalizedEtat = dossier.etat === 'TRAITE' ? 'CLOTURE' : dossier.etat;
-    const isFinished = normalizedEtat === 'CLOTURE' || normalizedEtat === 'REJETE';
-
-    if (normalizedEtat === 'CLOTURE') {
-      currentNiveauIndex = steps.length;
-    }
-
-    return steps.map((step, index) => {
+    // ── Normal flow ──
+    return newSteps.map((step) => {
       let stepStatus = 'pending';
       let dateText = 'À venir';
       let timeText = '';
 
-      if (isFinished) {
-        stepStatus = index === steps.length - 1 ? (normalizedEtat === 'REJETE' ? 'rejected' : 'completed') : 'completed';
-      } else if (index < currentNiveauIndex) {
-        stepStatus = 'completed';
-      } else if (index === currentNiveauIndex) {
-        stepStatus = 'in-progress';
-      }
-
-      const eventHistoList = historique.filter((h) =>
-        h.new_status === step.id ||
-        (index === 0 && /soumis|création du dossier|creation du dossier/i.test(h.action || ''))
-      );
-      if (eventHistoList.length > 0) {
-        const lastEvent = eventHistoList[eventHistoList.length - 1];
-        const dateObj = new Date(lastEvent.created_at);
-        dateText = dateObj.toLocaleDateString('fr-FR');
-        timeText = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-      } else if (stepStatus === 'completed' || stepStatus === 'in-progress') {
-        const dateObj = new Date(dossier.updated_at || dossier.created_at);
-        dateText = dateObj.toLocaleDateString('fr-FR');
+      switch (step.id) {
+        case 'VALIDATION': {
+          // Completed when date_reception is no longer sentinel
+          // In-progress when still sentinel (pending validation)
+          if (isValidated || isFinished) {
+            stepStatus = 'completed';
+          } else {
+            stepStatus = 'in-progress';
+          }
+          // Find the submission or validation event
+          const subEvent = historique.find(h => /soumis|DOSSIER_SOUMIS/i.test(h?.action || ''));
+          const valEvent = historique.find(h => /VALIDATION_CONFORMITE/i.test(h?.action || ''));
+          const evt = valEvent || subEvent;
+          if (evt) {
+            const d = new Date(evt.created_at);
+            dateText = d.toLocaleDateString('fr-FR');
+            timeText = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+          } else {
+            const d = new Date(dossier.created_at);
+            dateText = d.toLocaleDateString('fr-FR');
+            timeText = new Date(dossier.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+          }
+          break;
+        }
+        case 'GESTION': {
+          // Completed when dossier left RC (moved to PRESTATION or further)
+          // In-progress when validated and still at RC level
+          if (isInTraitement || isFinished) {
+            stepStatus = 'completed';
+          } else if (isValidated && niveau === 'RELATION_CLIENT') {
+            stepStatus = 'in-progress';
+          }
+          // Find validation event for start date
+          if (stepStatus !== 'pending') {
+            const valEvent = historique.find(h => /VALIDATION_CONFORMITE/i.test(h?.action || ''));
+            if (valEvent) {
+              const d = new Date(valEvent.created_at);
+              dateText = d.toLocaleDateString('fr-FR');
+              timeText = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            } else if (isValidated && dateReception) {
+              const d = new Date(dateReception);
+              dateText = d.toLocaleDateString('fr-FR');
+            }
+          }
+          break;
+        }
+        case 'TRAITEMENT': {
+          // Completed when dossier is finished (CLOTURE)
+          // In-progress when at PRESTATION or FINANCE level
+          if (isFinished) {
+            stepStatus = 'completed';
+          } else if (isInTraitement) {
+            stepStatus = 'in-progress';
+          }
+          if (stepStatus !== 'pending') {
+            const prestEvent = historique.find(h =>
+              /ENVOI_PRESTATION|TRANSMISSION|PRESTATION/i.test(h?.action || '') ||
+              h?.new_status === 'PRESTATION'
+            );
+            if (prestEvent) {
+              const d = new Date(prestEvent.created_at);
+              dateText = d.toLocaleDateString('fr-FR');
+              timeText = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            }
+          }
+          break;
+        }
+        case 'CLOTURE': {
+          if (isFinished) {
+            stepStatus = normalizedEtat === 'REJETE' ? 'rejected' : 'completed';
+            const clotureEvent = historique.find(h =>
+              /PAIEMENT_CONFIRME|CLOTURE/i.test(h?.action || '') ||
+              h?.new_status === 'CLOTURE'
+            );
+            if (clotureEvent) {
+              const d = new Date(clotureEvent.created_at);
+              dateText = d.toLocaleDateString('fr-FR');
+              timeText = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            } else {
+              const d = new Date(dossier.updated_at || dossier.created_at);
+              dateText = d.toLocaleDateString('fr-FR');
+            }
+          }
+          break;
+        }
+        default:
+          break;
       }
 
       return {
@@ -330,16 +402,16 @@ function RequestDetails() {
         status: stepStatus,
         date: dateText,
         time: timeText,
-        icon: getStepIcon(step.id)
+        icon: getStepIcon(step.id),
       };
     });
   };
 
   const getStepIcon = (id) => {
     switch(id) {
-      case 'RELATION_CLIENT': return '📦';
-      case 'PRESTATION': return '🔍';
-      case 'FINANCE': return '⚖️';
+      case 'VALIDATION': return '✔️';
+      case 'GESTION': return '📋';
+      case 'TRAITEMENT': return '⚙️';
       case 'CLOTURE': return '✅';
       case 'ANNULE': return '⛔';
       default: return '📄';
@@ -512,64 +584,7 @@ function RequestDetails() {
           </div>
         </section>
         
-        {/* ═══════════ History Section ═══════════ */}
-        {historique && historique.length > 0 && (
-          <section className="animate-slide-up" style={{ animationDelay: '200ms', animationFillMode: 'backwards' }}>
-            <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100/80 overflow-hidden">
-              <div className="p-6 sm:p-8">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center">
-                    <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <h2 className="text-lg sm:text-xl font-extrabold text-comar-navy">
-                    Historique Détaillé
-                  </h2>
-                  <span className="ml-auto text-xs font-bold text-comar-gray-text bg-comar-gray-bg px-3 py-1 rounded-full">
-                    {historique.length} événement{historique.length > 1 ? 's' : ''}
-                  </span>
-                </div>
 
-                <div className="space-y-2">
-                  {historique.map((h, idx) => {
-                    const eventText = formatHistoryEvent(h);
-                    return (
-                      <div 
-                        key={h.id} 
-                        className="group flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3.5 rounded-xl border border-transparent hover:border-gray-100 hover:bg-gray-50/50 transition-all duration-200 animate-fade-in"
-                        style={{ animationDelay: `${idx * 50}ms`, animationFillMode: 'backwards' }}
-                      >
-                        {/* Timeline dot */}
-                        <div className="flex items-center gap-3 shrink-0">
-                          <div className="w-2 h-2 rounded-full bg-gradient-to-br from-comar-royal to-blue-500 ring-4 ring-comar-royal/10 group-hover:ring-comar-royal/20 transition-all" />
-                          <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-mono text-comar-gray-text bg-comar-gray-bg px-3 py-1.5 rounded-lg border border-gray-100/50">
-                            <svg className="w-3 h-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            {new Date(h.created_at).toLocaleString('fr-FR')}
-                          </span>
-                        </div>
-
-                        {/* Action text */}
-                        <div className="min-w-0">
-                          <p className="text-sm text-comar-navy font-medium group-hover:text-comar-royal transition-colors duration-200">
-                            {eventText.title}
-                          </p>
-                          {eventText.subtitle && (
-                            <p className="text-xs text-comar-gray-text mt-1">
-                              {eventText.subtitle}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
       </div>
     </div>
   );

@@ -134,7 +134,7 @@ function MyAccount() {
           <div className="flex flex-wrap items-center gap-3 pt-5 border-t border-gray-100">
             <Link
               to="/home"
-              className="inline-flex items-center px-5 py-2.5 bg-comar-royal text-white text-sm font-semibold rounded-xl shadow-md hover:bg-blue-700 transition-all duration-200"
+              className="inline-flex items-center px-5 py-2.5 bg-comar-royal text-white text-sm font-semibold rounded-xl shadow-md hover:bg-comar-green-dark transition-all duration-200"
             >
               Retour au tableau de bord
             </Link>
